@@ -1,45 +1,26 @@
-# science-blog-nld
+# Science Blog NLD - Divulgación Científica de Vanguardia
 
+Este repositorio contiene el blog profesional del **Dr. Juan Moisés de la Serna**, dedicado a la divulgación científica en las áreas de neurociencia, psicología y epigenética.
 
-## How to Cite
+## Objetivo del Proyecto
 
-If you use this repository in your research, please cite:
+El objetivo de este sitio es proporcionar contenido de alto valor académico y científico, accesible para el público general pero con el rigor necesario para ser una fuente de referencia en el ámbito hispanohablante.
 
-> de la Serna, J. M. (2026). *Science Blog Nld*. Universidad Internacional de La Rioja (UNIR).
-> https://github.com/juanmoisesd/science-blog-nld 
+## Características
 
-See `CITATION.cff` for formatted references.
+- **Contenido Extenso:** Cada artículo cuenta con más de 10.000 palabras de análisis profundo.
+- **Diseño Profesional:** Interfaz limpia, responsiva y enfocada en la legibilidad.
+- **Enfoque Académico:** Referencias a estudios clínicos y mecanismos moleculares.
 
-## Overview
-This repository contains data and resources related to **science blog nld**. It is part of an open science initiative to share research findings and datasets with the global scientific community.
+## Estructura del Repositorio
 
-## Research Context
-The project addresses key questions in the field of neuroscience and social sciences, focusing on providing accessible data for further analysis and validation.
+- `index.html`: Página principal y centro de navegación.
+- `articulos/`: Directorio que contiene los tratados científicos detallados.
+- `assets/css/`: Estilos visuales del proyecto.
 
-## Repository Structure
-- `data/`: Contains the datasets used in this research.
-- `src/`: Source code for data processing and analysis.
-- `results/`: Output files, figures, and metrics.
+## Publicación
 
-## Usage
-To use the resources in this repository, clone the project and ensure you have the necessary dependencies installed. Refer to the specific documentation in each folder for more details.
+Este sitio está optimizado para ser servido a través de **GitHub Pages**. Todos los enlaces son relativos y funcionan de forma autónoma.
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Overview
-This repository contains data and resources related to **science blog nld**. It is part of an open science initiative to share research findings and datasets with the global scientific community.
-
-## Research Context
-The project addresses key questions in the field of neuroscience and social sciences, focusing on providing accessible data for further analysis and validation.
-
-## Repository Structure
-- `data/`: Contains the datasets used in this research.
-- `src/`: Source code for data processing and analysis.
-- `results/`: Output files, figures, and metrics.
-
-## Usage
-To use the resources in this repository, clone the project and ensure you have the necessary dependencies installed. Refer to the specific documentation in each folder for more details.
-
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+---
+© 2026 Dr. Juan Moisés de la Serna | Universidad Internacional de La Rioja (UNIR)
