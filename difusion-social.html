@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOCIODYNAMICS: Simulación Avanzada de Difusión Social</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg: #05070a;
+            --panel: rgba(13, 17, 23, 0.75);
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+
+            /* Estados */
+            --s-uninformed: #475569;
+            --s-received: #f59e0b;
+            --s-active: #ef4444;
+            --s-inactive: #3b82f6;
+            --s-verifier: #10b981;
+            --s-debunker: #8b5cf6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* --- UI LAYOUT --- */
+        #viewport {
+            position: relative;
+            flex: 1;
+            height: 100%;
+            cursor: crosshair;
+            display: flex;
+            background: #000;
+        }
+
+        .sim-container {
+            position: relative;
+            flex: 1;
+            height: 100%;
+            border-right: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        canvas.sim-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #sidebar {
+            width: 400px;
+            height: 100%;
+            background: var(--panel);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            overflow-y: auto;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        }
+
+        /* --- COMPONENTS --- */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section { padding: 20px; }
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* --- CONTROLS --- */
+        .control-group { margin-bottom: 16px; }
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+        .control-label span:last-child { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: #1e293b;
+            border-radius: 2px;
+            appearance: none;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        select, button {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover { background: #334155; }
+        button.primary {
+            background: var(--accent);
+            border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+        button.primary:hover { background: #2563eb; transform: translateY(-1px); }
+
+        /* --- STATS --- */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .stat-box {
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 700; display: block; }
+        .stat-lbl { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+
+        /* --- OVERLAYS --- */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+        }
+
+        #tooltip {
+            position: fixed;
+            background: rgba(13, 17, 23, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--accent);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+            width: 220px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 15px;
+            background: rgba(0,0,0,0.7);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            border: 1px solid var(--accent);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .l-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        /* --- MODALS --- */
+        #modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            max-width: 800px;
+            width: 100%;
+            border-radius: 16px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 40px;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* --- CHARTS --- */
+        #chart-container {
+            height: 120px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .event-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="viewport">
+    <div id="container-1" class="sim-container">
+        <canvas id="canvas-1" class="sim-canvas"></canvas>
+        <div class="hud" id="hud-1" style="position: absolute; top: 20px; left: 20px; pointer-events: none;">
+            <h1 style="font-size: 1.2rem; font-weight: 800; color: white;">SOCIODYNAMICS 2.0</h1>
+            <p style="color: var(--text-dim); font-size: 0.8rem;">Instancia A</p>
+        </div>
+    </div>
+
+    <div id="container-2" class="sim-container" style="display: none;">
+        <canvas id="canvas-2" class="sim-canvas"></canvas>
+        <div class="hud" id="hud-2" style="position: absolute; top: 20px; left: 20px; pointer-events: none;">
+            <h1 style="font-size: 1.2rem; font-weight: 800; color: white;">SOCIODYNAMICS 2.0</h1>
+            <p style="color: var(--text-dim); font-size: 0.8rem;">Instancia B (Comparativa)</p>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="l-dot" style="background: var(--s-uninformed)"></div>No informado</div>
+        <div class="legend-item"><div class="l-dot" style="background: var(--s-received)"></div>Recibido</div>
+        <div class="legend-item"><div class="l-dot" style="background: var(--s-active)"></div>Compartiendo</div>
+        <div class="legend-item"><div class="l-dot" style="background: var(--s-inactive)"></div>Saturado</div>
+        <div class="legend-item"><div class="l-dot" style="background: var(--s-verifier)"></div>Verificador</div>
+        <div class="legend-item"><div class="l-dot" style="background: var(--s-debunker)"></div>Desmentidor</div>
+    </div>
+
+    <div id="tooltip"></div>
+</div>
+
+<aside id="sidebar">
+    <div class="header">
+        <h1>SIMULACIÓN SOCIAL</h1>
+        <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;">Teoría de Redes y Contagio de Ideas</p>
+    </div>
+
+    <div class="section">
+        <button class="primary" id="btn-play">INICIAR SIMULACIÓN</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+            <button id="btn-reset">REINICIAR</button>
+            <button id="btn-compare">COMPARAR</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Parámetros de Red</div>
+
+        <div class="control-group">
+            <div class="control-label"><span>Población</span><span id="val-pop">800</span></div>
+            <input type="range" id="pop-range" min="100" max="1500" value="800">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label"><span>Conectividad</span><span id="val-conn">6</span></div>
+            <input type="range" id="conn-range" min="2" max="15" value="6">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label"><span>Clustering (Comunidades)</span><span id="val-cluster">0.7</span></div>
+            <input type="range" id="cluster-range" min="0" max="1" step="0.1" value="0.7">
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Contenido e Información</div>
+
+        <div class="control-group">
+            <label class="control-label">Tipo de Mensaje</label>
+            <select id="msg-type">
+                <option value="rumor">Rumor (Emocional, Viral)</option>
+                <option value="verificada">Noticia Científica / Verificada</option>
+                <option value="fake">Fake News (Desinformación)</option>
+                <option value="innovacion">Innovación Tecnológica</option>
+                <option value="campaña">Campaña Sanitaria / Institucional</option>
+                <option value="whatsapp">Cadena de WhatsApp</option>
+                <option value="television">Televisión Tradicional (Top-Down)</option>
+                <option value="meme">Meme (Viralidad Explosiva)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Modo Visual</label>
+            <select id="vis-mode">
+                <option value="network">Red Estándar</option>
+                <option value="heatmap">Mapa de Calor</option>
+                <option value="tree">Árbol de Transmisión</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <div class="control-label"><span>Algoritmo de Recomendación</span><span id="val-algo">40%</span></div>
+            <input type="range" id="algo-range" min="0" max="100" value="40">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label"><span>Pensamiento Crítico (Media)</span><span id="val-critical">30%</span></div>
+            <input type="range" id="critical-range" min="0" max="100" value="30">
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Intervención Directa</div>
+        <div class="event-grid">
+                <button class="event-btn" onclick="SimManager.triggerEvent('desmentido')">Desmentido</button>
+                <button class="event-btn" onclick="SimManager.triggerEvent('influencer')">Influencer</button>
+                <button class="event-btn" onclick="SimManager.triggerEvent('bloqueo')">Bloqueo</button>
+                <button class="event-btn" onclick="SimManager.triggerEvent('institucional')">Campaña</button>
+        </div>
+    </div>
+
+        <div id="comparison-selector" class="section" style="display: none; background: rgba(59, 130, 246, 0.1);">
+            <div class="section-title">Variable de Comparación</div>
+            <select id="comp-var">
+                <option value="none">Sin diferencia (Sincronizado)</option>
+                <option value="critical">Pensamiento Crítico (+50% en B)</option>
+                <option value="connectivity">Conectividad (Doble en B)</option>
+                <option value="algo">Algoritmo (Cámaras de Eco en B)</option>
+                <option value="verifiers">Más Verificadores en B</option>
+            </select>
+        </div>
+
+    <div class="section" style="border-bottom: none;">
+        <div class="section-title">Métricas de Difusión</div>
+        <div class="stats-row">
+            <div class="stat-box">
+                <span class="stat-val" id="stat-informed">0</span>
+                <span class="stat-lbl">Informados</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="stat-active">0</span>
+                <span class="stat-lbl">Difusores</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="stat-reach">0%</span>
+                <span class="stat-lbl">Alcance</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="stat-speed">0.0</span>
+                <span class="stat-lbl">Vel. Viral</span>
+            </div>
+        </div>
+        <div id="chart-container">
+            <canvas id="chart-canvas"></canvas>
+        </div>
+
+        <div id="milestones" style="margin-top: 10px; font-size: 0.65rem; color: var(--text-dim); display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+            <span>T25%: <b id="m-25">-</b></span>
+            <span>T50%: <b id="m-50">-</b></span>
+            <span>T75%: <b id="m-75">-</b></span>
+            <span>T90%: <b id="m-90">-</b></span>
+        </div>
+
+        <div style="margin-top: 15px; font-size: 0.75rem; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+            <p style="margin-bottom: 4px;"><strong>Líder de Opinión:</strong> <span id="stat-top-inf" style="color: var(--accent);">N/A</span></p>
+            <p style="margin-bottom: 4px;"><strong>Comunidades afectadas:</strong> <span id="stat-comm" style="color: var(--accent);">0</span></p>
+            <p style="margin-bottom: 4px;"><strong>Puente más activo:</strong> <span id="stat-path" style="color: var(--accent);">N/A</span></p>
+            <p style="margin-bottom: 4px;"><strong>Población aislada:</strong> <span id="stat-unreached" style="color: var(--accent);">800</span></p>
+            <p style="margin-bottom: 4px;"><strong>Tamaño máximo:</strong> <span id="stat-max-size" style="color: var(--accent);">0</span></p>
+        </div>
+    </div>
+
+    <div class="section">
+        <button id="btn-didactic" style="background: transparent; border-color: var(--accent); color: var(--accent);">MODO DIDÁCTICO</button>
+    </div>
+</aside>
+
+<div id="modal">
+    <div class="modal-content">
+        <h2 style="font-size: 1.8rem; margin-bottom: 20px; color: var(--accent);">Manual de Epidemiología Social</h2>
+        <div style="line-height: 1.7; font-size: 0.95rem;">
+            <p>Bienvenido a <strong>SOCIODYNAMICS</strong>. Esta herramienta simula la propagación de información utilizando modelos matemáticos de redes complejas.</p>
+
+            <h3 style="margin-top: 25px; color: var(--s-received);">Diferencia entre Rumor y Noticia</h3>
+            <p>Los rumores suelen apelar al <em>sesgo de confirmación</em> y las emociones fuertes, lo que reduce el tiempo de reflexión y aumenta la viralidad. En esta simulación, verás que los rumores viajan más rápido pero se agotan antes.</p>
+
+            <h3 style="margin-top: 25px; color: var(--accent);">El Algoritmo de Recomendación</h3>
+            <p>Representa las "Cámaras de Eco". A mayor porcentaje, el sistema tenderá a conectar a personas con las mismas ideas, dificultando que una corrección o desmentido penetre en comunidades cerradas.</p>
+
+            <h3 style="margin-top: 25px; color: var(--s-verifier);">Verificadores y Desmentidores</h3>
+            <p>Los individuos con alto <strong>Pensamiento Crítico</strong> actúan como cortafuegos. No solo filtran la información (verificadores), sino que pueden activamente propagar la verdad para neutralizar el rumor (desmentidores).</p>
+
+            <h3 style="margin-top: 25px; color: var(--s-active);">Dinámica Viral vs. Innovación</h3>
+            <p>Mientras que los <strong>Memes</strong> y <strong>Rumores</strong> dependen de la curiosidad y la baja resistencia, la <strong>Innovación</strong> se basa en el beneficio percibido. Podrás observar cómo las innovaciones tardan más en "cuajar" pero tienen una permanencia mucho más sólida en la red.</p>
+
+            <h3 style="margin-top: 25px; color: var(--accent);">Líderes de Opinión (Hubs)</h3>
+            <p>Son los nodos con más conexiones. Un solo influencer infectado puede cambiar el curso de la simulación, saltando entre comunidades y acelerando la velocidad de difusión exponencialmente.</p>
+
+            <button onclick="document.getElementById('modal').style.display='none'" class="primary" style="margin-top: 30px;">Comprendido, empezar simulación</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * SOCIODYNAMICS ENGINE v2.0
+     * Simulación de red basada en física y agentes psicológicos.
+     */
+
+    // --- MATH & UTILS ---
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    // --- ENGINE CONSTANTS ---
+    const STATES = { UNINFORMED: 0, RECEIVED: 1, ACTIVE: 2, INACTIVE: 3, VERIFIER: 4, DEBUNKER: 5 };
+    const STATE_COLORS = {
+        [STATES.UNINFORMED]: '#475569',
+        [STATES.RECEIVED]: '#f59e0b',
+        [STATES.ACTIVE]: '#ef4444',
+        [STATES.INACTIVE]: '#3b82f6',
+        [STATES.VERIFIER]: '#10b981',
+        [STATES.DEBUNKER]: '#8b5cf6'
+    };
+
+    // --- AGENT CLASS ---
+    class Agent {
+        constructor(id, x, y) {
+            this.id = id;
+            this.x = x; this.y = y;
+            this.px = x; this.py = y;
+            this.ax = 0; this.ay = 0;
+
+            this.radius = 4;
+            this.state = STATES.UNINFORMED;
+            this.community = 0;
+            this.contacts = [];
+            this.infectedBy = null;
+            this.receivedAt = 0;
+            this.history = []; // Historial de estados/eventos
+
+            // Perfil Psicológico y Demográfico
+            this.influence = 0.1 + Math.random() * 0.3;
+            this.curiosity = Math.random();
+            this.criticalThinking = Math.random();
+            this.memory = 0.3 + Math.random() * 0.7; // Capacidad de recordar la veracidad
+            this.education = Math.random();
+            this.age = 15 + Math.random() * 70;
+            this.trust = Math.random(); // Confianza general en desconocidos
+            this.benefitPerception = Math.random(); // Para innovaciones
+
+            // Dinámica de interacción
+            this.fatigue = 0;
+            this.sharedCount = 0;
+            this.reachedCount = 0; // Cuántas personas infectó
+            this.lastActionTick = 0;
+            this.isInfluencer = false;
+        }
+
+        applyForce(fx, fy) {
+            this.ax += fx;
+            this.ay += fy;
+        }
+
+        updatePhysics(dt, friction, bounds) {
+            // Verlet Integration
+            const vx = (this.x - this.px) * friction;
+            const vy = (this.y - this.py) * friction;
+
+            this.px = this.x;
+            this.py = this.y;
+
+            this.x += vx + this.ax * dt * dt;
+            this.y += vy + this.ay * dt * dt;
+
+            this.ax = 0; this.ay = 0;
+
+            // Bounds constraints
+            const margin = 50;
+            if (this.x < margin) this.x = margin;
+            if (this.x > bounds.w - 20) this.x = bounds.w - 20;
+            if (this.y < margin) this.y = margin;
+            if (this.y > bounds.h - margin) this.y = bounds.h - margin;
+        }
+
+        interact(tick, world) {
+            if (this.state !== STATES.ACTIVE && this.state !== STATES.DEBUNKER) return;
+
+            const delay = 30 + (this.age * 0.5);
+            if (tick - this.lastActionTick < delay) return;
+            this.lastActionTick = tick;
+
+            // Probabilidad de interactuar con cada contacto para no procesar todos siempre
+            const interactionChance = 0.5;
+
+            for (let i = 0; i < this.contacts.length; i++) {
+                if (Math.random() > interactionChance) continue;
+
+                const cid = this.contacts[i];
+                const target = world.agents[cid];
+
+                // Sesgo de algoritmo: más probable interactuar con gente de la misma comunidad
+                if (world.algoFactor > 0.1 && target.community !== this.community && Math.random() < world.algoFactor) {
+                    continue;
+                }
+
+                if (target.state === STATES.UNINFORMED) {
+                    this.tryInfect(target, world);
+                } else if (this.state === STATES.DEBUNKER && (target.state === STATES.ACTIVE || target.state === STATES.RECEIVED)) {
+                    this.tryCure(target, world);
+                }
+            }
+        }
+
+        tryInfect(target, world) {
+            const msg = world.msgParams;
+            const type = document.getElementById('msg-type').value;
+
+            const activeFriends = target.contacts.filter(cid => world.agents[cid].state === STATES.ACTIVE).length;
+            const socialProof = activeFriends / target.contacts.length;
+
+            let prob = msg.baseProb * (1 + this.influence) * target.curiosity;
+
+            // Lógica específica por tipo
+            if (type === 'innovacion') {
+                prob = msg.baseProb * target.benefitPerception * (1 + socialProof);
+            } else {
+                prob += socialProof * 0.4;
+            }
+
+            if (this.isInfluencer) prob *= (1 + this.influence);
+
+            // Resistencia: Pensamiento crítico, Educación y Edad (los mayores suelen ser más escépticos o cautos según el modelo)
+            const ageResistance = target.age > 50 ? 0.1 : 0;
+            const resistance = (target.criticalThinking * 0.6 + target.education * 0.3 + ageResistance) * world.globalCritical;
+            prob -= resistance;
+
+            if (Math.random() < prob) {
+                target.receiveInfo(this, world);
+                this.sharedCount++;
+                this.reachedCount++;
+                const key = this.id < target.id ? `${this.id}-${target.id}` : `${target.id}-${this.id}`;
+                world.pathUsage.set(key, world.tick); // Guardar el tick de último uso para animación
+                world.addParticle(this, target, STATE_COLORS[this.state]);
+
+                // Emisión de onda luminosa al compartir
+                world.waves.push({
+                    x: this.x, y: this.y,
+                    r: 0, maxR: 60,
+                    alpha: 0.6,
+                    color: STATE_COLORS[this.state],
+                    thick: 3
+                });
+            }
+        }
+
+        receiveInfo(sender, world) {
+            this.infectedBy = sender.id;
+            this.receivedAt = world.tick;
+            this.history.push({ t: world.tick, event: "Recibió información de " + sender.id });
+
+            // Decisión de verificación (Slow thinking vs Fast thinking)
+            const verifyProb = (this.criticalThinking * 0.8 + this.education * 0.2) * (1 - world.msgParams.viralFactor);
+
+            if (Math.random() < verifyProb * (world.globalCritical * 2)) {
+                this.state = STATES.VERIFIER;
+                this.history.push({ t: world.tick, event: "Verificó la noticia" });
+
+                if (world.msgParams.isDeceptive && Math.random() > 0.4) {
+                    setTimeout(() => {
+                        if(this.state === STATES.VERIFIER) {
+                            this.state = STATES.DEBUNKER;
+                            this.history.push({ t: world.tick + 100, event: "Se convirtió en desmentidor" });
+                        }
+                    }, 1000);
+                }
+                return;
+            }
+
+            this.state = STATES.RECEIVED;
+            const readTime = 500 + (1 - this.curiosity) * 1500;
+            setTimeout(() => {
+                if (this.state === STATES.RECEIVED) {
+                    this.state = STATES.ACTIVE;
+                    this.history.push({ t: world.tick + 50, event: "Comenzó a compartir" });
+                }
+            }, readTime);
+        }
+
+        tryCure(target, world) {
+            // El desmentidor intenta convencer al receptor (basado en memoria y educación)
+            const cureProb = 0.2 * (1 + target.criticalThinking) * (target.memory);
+            if (Math.random() < cureProb) {
+                target.state = STATES.INACTIVE;
+                target.history.push({ t: world.tick, event: "Información desmentida por #" + this.id });
+                world.addParticle(this, target, STATE_COLORS[STATES.DEBUNKER]);
+
+                // Efecto visual de desmentido (Círculos concéntricos morados)
+                world.waves.push({
+                    x: target.x, y: target.y,
+                    r: 0, maxR: 40,
+                    alpha: 0.8,
+                    color: STATE_COLORS[STATES.DEBUNKER],
+                    thick: 4
+                });
+            }
+        }
+
+        updateBehavior(world) {
+            if (this.state === STATES.ACTIVE) {
+                // La fatiga depende del tiempo y la persistencia del mensaje
+                this.fatigue += 0.001 / world.msgParams.persistence;
+                if (this.fatigue > 1.0) {
+                    this.state = STATES.INACTIVE;
+                }
+            }
+        }
+    }
+
+    // --- PARTICLE SYSTEM ---
+    class Particle {
+        constructor(from, to, color) {
+            this.x = from.x; this.y = from.y;
+            this.tx = to.x; this.ty = to.y;
+            this.progress = 0;
+            this.color = color;
+            this.speed = 0.02 + Math.random() * 0.02;
+        }
+        update() { this.progress += this.speed; return this.progress >= 1; }
+        draw(ctx) {
+            const x = lerp(this.x, this.tx, this.progress);
+            const y = lerp(this.y, this.ty, this.progress);
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fill();
+            // Glow
+            ctx.shadowBlur = 5; ctx.shadowColor = this.color;
+        }
+    }
+
+    // --- MAIN SIMULATION ENGINE ---
+    class SocialSim {
+        constructor(canvasId, statsId) {
+            this.canvas = document.getElementById(canvasId);
+            this.ctx = this.canvas.getContext('2d');
+            this.id = canvasId;
+
+            this.agents = [];
+            this.connections = [];
+            this.particles = [];
+            this.waves = [];
+            this.tick = 0;
+            this.running = false;
+            this.history = [];
+            this.pathUsage = new Map();
+            this.milestones = { p25: null, p50: null, p75: null, p90: null };
+
+            // Settings (Local copy for individual variation in comparison)
+            this.popCount = 800;
+            this.avgConn = 6;
+            this.clusterFactor = 0.7;
+            this.globalCritical = 0.3;
+            this.algoFactor = 0.4;
+            this.msgParams = {};
+        }
+
+        resize() {
+            const container = this.canvas.parentElement;
+            this.canvas.width = container.clientWidth;
+            this.canvas.height = container.clientHeight;
+        }
+
+        reset() {
+            this.agents = [];
+            this.connections = [];
+            this.particles = [];
+            this.waves = [];
+            this.history = [];
+            this.pathUsage.clear();
+            this.tick = 0;
+
+            const w = this.canvas.width;
+            const h = this.canvas.height;
+            const communities = 6;
+
+            for (let i = 0; i < this.popCount; i++) {
+                const comm = i % communities;
+                const angle = (comm / communities) * Math.PI * 2;
+                const dist = 120 + Math.random() * 180;
+                const x = w/2 + Math.cos(angle) * dist + (Math.random()-0.5)*150;
+                const y = h/2 + Math.sin(angle) * dist + (Math.random()-0.5)*150;
+
+                const agent = new Agent(i, x, y);
+                agent.community = comm;
+
+                // Aplicar diferencia si es Instancia B
+                if (this.id === 'canvas-2') {
+                    const diffVar = document.getElementById('comp-var').value;
+                    if (diffVar === 'critical') agent.criticalThinking = Math.min(1, agent.criticalThinking * 1.6);
+                    if (diffVar === 'verifiers' && Math.random() < 0.3) agent.criticalThinking = 0.95;
+                }
+
+                this.agents.push(agent);
+            }
+
+            // Aplicar variables de red específicas para B
+            if (this.id === 'canvas-2') {
+                const diffVar = document.getElementById('comp-var').value;
+                if (diffVar === 'connectivity') this.avgConn *= 2;
+                if (diffVar === 'algo') this.algoFactor = 0.95;
+            }
+
+            this.generateNetwork();
+            this.updateMsgParams();
+        }
+
+        generateNetwork() {
+            // Optimización: agrupar por comunidad para evitar filtros O(N) dentro del bucle
+            const commGroups = {};
+            this.agents.forEach(a => {
+                if (!commGroups[a.community]) commGroups[a.community] = [];
+                commGroups[a.community].push(a.id);
+            });
+
+            for (let i = 0; i < this.agents.length; i++) {
+                const a = this.agents[i];
+                const commWeight = this.clusterFactor;
+
+                for (let k = 0; k < this.avgConn / 2; k++) {
+                    let targetIdx;
+                    if (Math.random() < commWeight) {
+                        const group = commGroups[a.community];
+                        targetIdx = group[Math.floor(Math.random() * group.length)];
+                    } else {
+                        targetIdx = Math.floor(Math.random() * this.agents.length);
+                    }
+                    if (targetIdx !== undefined && targetIdx !== i) this.addLink(i, targetIdx);
+                }
+            }
+
+            const hubCount = Math.ceil(this.popCount / 100);
+            for (let i = 0; i < hubCount; i++) {
+                const hub = this.agents[Math.floor(Math.random() * this.agents.length)];
+                hub.isInfluencer = true; hub.radius = 8; hub.influence = 0.8 + Math.random() * 0.2;
+                for (let k = 0; k < 20; k++) this.addLink(hub.id, Math.floor(Math.random() * this.agents.length));
+            }
+        }
+
+        addLink(i, j) {
+            if (!this.agents[i].contacts.includes(j)) {
+                this.agents[i].contacts.push(j);
+                this.agents[j].contacts.push(i);
+                const key = i < j ? `${i}-${j}` : `${j}-${i}`;
+                this.connections.push([i, j, key]);
+                this.pathUsage.set(key, 0);
+            }
+        }
+
+        updateMsgParams() {
+            const type = document.getElementById('msg-type').value;
+            const presets = {
+                rumor: { baseProb: 0.6, persistence: 0.4, viralFactor: 0.8, isDeceptive: true },
+                verificada: { baseProb: 0.2, persistence: 1.5, viralFactor: 0.2, isDeceptive: false },
+                fake: { baseProb: 0.8, persistence: 0.6, viralFactor: 0.9, isDeceptive: true },
+                innovacion: { baseProb: 0.3, persistence: 3.0, viralFactor: 0.4, isDeceptive: false },
+                campaña: { baseProb: 0.4, persistence: 2.0, viralFactor: 0.1, isDeceptive: false },
+                whatsapp: { baseProb: 0.7, persistence: 0.5, viralFactor: 0.85, isDeceptive: true },
+                television: { baseProb: 0.15, persistence: 1.2, viralFactor: 0.05, isDeceptive: false },
+                meme: { baseProb: 0.95, persistence: 0.1, viralFactor: 0.98, isDeceptive: false }
+            };
+            this.msgParams = presets[type] || presets.rumor;
+
+            // Lógica especial para TV: Infecta a muchos aleatorios inicialmente
+            if (type === 'television' && this.running) {
+                for(let i=0; i<20; i++) {
+                    const a = this.agents[Math.floor(Math.random()*this.agents.length)];
+                    if(a.state === STATES.UNINFORMED) a.state = STATES.ACTIVE;
+                }
+            }
+        }
+
+        addParticle(from, to, color) {
+            this.particles.push(new Particle(from, to, color));
+            if (this.particles.length > 300) this.particles.shift();
+        }
+
+        triggerEvent(type) {
+            if (type === 'desmentido') {
+                this.agents.filter(a => a.state === STATES.VERIFIER || a.criticalThinking > 0.5).forEach(a => {
+                    a.state = STATES.DEBUNKER;
+                    // Onda expansiva morada masiva para el evento
+                    this.waves.push({
+                        x: a.x, y: a.y,
+                        r: 0, maxR: 150,
+                        alpha: 0.6,
+                        color: STATE_COLORS[STATES.DEBUNKER],
+                        thick: 2
+                    });
+                });
+            } else if (type === 'influencer') {
+                const idx = Math.floor(Math.random() * this.agents.length);
+                const a = this.agents[idx]; a.isInfluencer = true; a.radius = 10; a.state = STATES.ACTIVE;
+                for(let i=0; i<50; i++) this.addLink(idx, Math.floor(Math.random()*this.agents.length));
+            } else if (type === 'bloqueo') {
+                const top = [...this.agents].sort((a,b) => b.sharedCount - a.sharedCount).slice(0, 5);
+                top.forEach(a => a.state = STATES.INACTIVE);
+            } else if (type === 'institucional') {
+                this.agents.filter(a => Math.random() < 0.2).forEach(a => { if(a.state === STATES.UNINFORMED) a.state = STATES.VERIFIER; });
+            }
+        }
+
+        update() {
+            if (!this.running) return;
+            this.tick++;
+            const dt = 0.5, friction = 0.92;
+            const bounds = { w: this.canvas.width, h: this.canvas.height };
+
+            // Optimization: Only run heavy physics every few frames for large populations
+            const runPhysics = this.popCount < 1000 || this.tick % 2 === 0;
+
+            if (runPhysics) {
+                this.agents.forEach(a => {
+                    const dcx = bounds.w/2 - a.x, dcy = bounds.h/2 - a.y;
+                    a.applyForce(dcx * 0.0005, dcy * 0.0005);
+                });
+
+                this.connections.forEach(([i, j]) => {
+                    const a = this.agents[i], b = this.agents[j];
+                    const dx = b.x - a.x, dy = b.y - a.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                    const force = (dist - 40) / dist * 0.04;
+                    a.applyForce(dx * force, dy * force); b.applyForce(-dx * force, -dy * force);
+                });
+            }
+
+            this.agents.forEach(a => {
+                a.updatePhysics(dt, friction, bounds);
+                a.updateBehavior(this);
+                a.interact(this.tick, this);
+            });
+
+            this.particles = this.particles.filter(p => !p.update());
+            this.waves.forEach(w => { w.r += 2; w.alpha -= 0.02; });
+            this.waves = this.waves.filter(w => w.alpha > 0);
+        }
+
+        render() {
+            const ctx = this.ctx;
+            const visMode = document.getElementById('vis-mode').value;
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+            if (visMode === 'heatmap') this.drawHeatmap(ctx);
+
+            // Dibujar conexiones
+            this.connections.forEach(([i, j, key]) => {
+                if (visMode === 'tree') { if (this.agents[i].infectedBy !== j && this.agents[j].infectedBy !== i) return; }
+
+                const lastUsage = this.pathUsage.get(key) || 0;
+                const recency = Math.max(0, 1 - (this.tick - lastUsage) / 50); // Glow que se desvanece
+
+                if (recency > 0) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(59, 130, 246, ${0.1 + recency * 0.8})`;
+                    ctx.lineWidth = 0.5 + recency * 2;
+                    ctx.moveTo(this.agents[i].x, this.agents[i].y);
+                    ctx.lineTo(this.agents[j].x, this.agents[j].y);
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(this.agents[i].x, this.agents[i].y);
+                    ctx.lineTo(this.agents[j].x, this.agents[j].y);
+                    ctx.stroke();
+                }
+            });
+
+            this.waves.forEach(w => {
+                ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(${SimManager.hexToRgb(w.color)}, ${w.alpha})`;
+                ctx.lineWidth = w.thick || 2;
+                ctx.stroke();
+            });
+
+            this.particles.forEach(p => p.draw(ctx));
+
+            // Renderizado de agentes con efectos visuales mejorados
+            const agentsByState = [[], [], [], [], [], []];
+            this.agents.forEach(a => agentsByState[a.state].push(a));
+
+            agentsByState.forEach((group, state) => {
+                if (group.length === 0) return;
+
+                group.forEach(a => {
+                    ctx.fillStyle = STATE_COLORS[state];
+
+                    // Efectos especiales para estados activos
+                    if (state === STATES.ACTIVE || state === STATES.DEBUNKER) {
+                        ctx.shadowBlur = 12; ctx.shadowColor = ctx.fillStyle;
+                        // Pulso visual sutil
+                        const pulse = 1 + Math.sin(this.tick * 0.1) * 0.2;
+                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius * pulse, 0, Math.PI * 2); ctx.fill();
+                        ctx.shadowBlur = 0;
+                    } else {
+                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2); ctx.fill();
+                    }
+
+                    // Halo para Influencers / Líderes de Opinión
+                    if (a.isInfluencer) {
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 3, 0, Math.PI * 2); ctx.stroke();
+
+                        // Halo exterior animado
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                        ctx.setLineDash([5, 5]);
+                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 6, this.tick * 0.05, this.tick * 0.05 + Math.PI * 2); ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                });
+            });
+        }
+
+        updateStats(isPrimary) {
+            const informedAgents = this.agents.filter(a => a.state !== STATES.UNINFORMED);
+            const informed = informedAgents.length;
+            const active = this.agents.filter(a => a.state === STATES.ACTIVE).length;
+            this.history.push({ informed, active });
+            if (this.history.length > 150) this.history.shift();
+
+            // Milestones
+            const p = informed / this.popCount;
+            if (!this.milestones.p25 && p >= 0.25) this.milestones.p25 = this.tick;
+            if (!this.milestones.p50 && p >= 0.50) this.milestones.p50 = this.tick;
+            if (!this.milestones.p75 && p >= 0.75) this.milestones.p75 = this.tick;
+            if (!this.milestones.p90 && p >= 0.90) this.milestones.p90 = this.tick;
+
+            if (isPrimary) {
+                document.getElementById('stat-informed').textContent = informed;
+                document.getElementById('stat-active').textContent = active;
+                document.getElementById('stat-reach').textContent = (p * 100).toFixed(1) + "%";
+
+                const top = [...this.agents].sort((a,b) => b.sharedCount - a.sharedCount)[0];
+                document.getElementById('stat-top-inf').textContent = top && top.sharedCount > 0 ? `ID #${top.id} (${top.sharedCount} dif.)` : "N/A";
+
+                let maxDiff = 0, bestPath = "N/A";
+                // Encontrar el par de nodos con más transmisiones (si lo hubiéramos contado, pero usamos tick. Calculemos el puente real)
+                const topInfectors = [...this.agents].sort((a,b) => b.reachedCount - a.reachedCount).slice(0, 3);
+                if (topInfectors[0] && topInfectors[0].reachedCount > 0) {
+                    bestPath = `ID #${topInfectors[0].id} → Red`;
+                }
+                document.getElementById('stat-path').textContent = bestPath;
+
+                const reachedComms = new Set(informedAgents.map(a => a.community)).size;
+                document.getElementById('stat-comm').textContent = reachedComms + " / 6";
+
+                document.getElementById('stat-unreached').textContent = this.popCount - informed;
+                document.getElementById('stat-max-size').textContent = Math.max(informed, parseInt(document.getElementById('stat-max-size').textContent || 0));
+
+                document.getElementById('m-25').textContent = this.milestones.p25 || '-';
+                document.getElementById('m-50').textContent = this.milestones.p50 || '-';
+                document.getElementById('m-75').textContent = this.milestones.p75 || '-';
+                document.getElementById('m-90').textContent = this.milestones.p90 || '-';
+
+                // Velocidad (Informed per tick in last 30 ticks)
+                if (this.history.length > 2) {
+                    const last = this.history[this.history.length-1].informed;
+                    const prev = this.history[this.history.length-2].informed;
+                    document.getElementById('stat-speed').textContent = ((last - prev) / 30 * 100).toFixed(2);
+                }
+
+                SimManager.drawHistory(this.history, this.popCount);
+            }
+        }
+
+        drawHeatmap(ctx) {
+            const gridSize = 50, w = this.canvas.width, h = this.canvas.height;
+            for (let x = 0; x < w; x += gridSize) {
+                for (let y = 0; y < h; y += gridSize) {
+                    let informed = 0, total = 0;
+                    this.agents.forEach(a => {
+                        if (a.x >= x && a.x < x + gridSize && a.y >= y && a.y < y + gridSize) {
+                            total++; if (a.state !== STATES.UNINFORMED) informed++;
+                        }
+                    });
+                    if (total > 0) {
+                        ctx.fillStyle = `rgba(239, 68, 68, ${informed / total * 0.3})`;
+                        ctx.fillRect(x, y, gridSize, gridSize);
+                    }
+                }
+            }
+        }
+    }
+
+    // --- SIMULATION MANAGER ---
+    const SimManager = {
+        sims: [],
+        comparing: false,
+        chartCanvas: null, chartCtx: null,
+
+        init() {
+            this.sims.push(new SocialSim('canvas-1'));
+            this.sims.push(new SocialSim('canvas-2'));
+            this.chartCanvas = document.getElementById('chart-canvas');
+            this.chartCtx = this.chartCanvas.getContext('2d');
+
+            this.setupUI();
+            this.resize();
+            this.reset();
+            window.addEventListener('resize', () => this.resize());
+            requestAnimationFrame(() => this.loop());
+        },
+
+        resize() {
+            this.sims.forEach(s => s.resize());
+            this.chartCanvas.width = this.chartCanvas.parentElement.clientWidth;
+            this.chartCanvas.height = 120;
+        },
+
+        reset() {
+            this.sims.forEach(s => s.reset());
+            document.getElementById('btn-play').textContent = "INICIAR SIMULACIÓN";
+        },
+
+        setupUI() {
+            const syncParam = (id, target, labelId, isPerc = false) => {
+                const el = document.getElementById(id);
+                el.oninput = (e) => {
+                    const val = parseFloat(e.target.value);
+                    this.sims.forEach(s => s[target] = isPerc ? val / 100 : val);
+                    document.getElementById(labelId).textContent = e.target.value + (isPerc ? "%" : "");
+                    if (id === 'pop-range' || id === 'conn-range') this.reset();
+                };
+            };
+
+            syncParam('pop-range', 'popCount', 'val-pop');
+            syncParam('conn-range', 'avgConn', 'val-conn');
+            syncParam('cluster-range', 'clusterFactor', 'val-cluster');
+            syncParam('algo-range', 'algoFactor', 'val-algo', true);
+            syncParam('critical-range', 'globalCritical', 'val-critical', true);
+
+            document.getElementById('comp-var').onchange = () => this.reset();
+
+            document.getElementById('btn-play').onclick = () => {
+                const anyRunning = this.sims.some(s => s.running);
+                this.sims.forEach(s => {
+                    s.running = !anyRunning;
+                    if (s.running && s.agents.every(a => a.state === STATES.UNINFORMED)) {
+                        s.agents[Math.floor(Math.random() * s.agents.length)].state = STATES.ACTIVE;
+                    }
+                });
+                document.getElementById('btn-play').textContent = !anyRunning ? "PAUSAR" : "REANUDAR";
+            };
+
+            document.getElementById('btn-reset').onclick = () => this.reset();
+            document.getElementById('btn-compare').onclick = () => this.toggleCompare();
+            document.getElementById('btn-didactic').onclick = () => document.getElementById('modal').style.display='flex';
+            document.getElementById('msg-type').onchange = () => this.sims.forEach(s => s.updateMsgParams());
+        },
+
+        toggleCompare() {
+            this.comparing = !this.comparing;
+            const c2 = document.getElementById('container-2');
+            const selector = document.getElementById('comparison-selector');
+            c2.style.display = this.comparing ? 'block' : 'none';
+            selector.style.display = this.comparing ? 'block' : 'none';
+            document.getElementById('btn-compare').style.background = this.comparing ? 'rgba(59, 130, 246, 0.2)' : 'transparent';
+            this.resize();
+            this.reset();
+        },
+
+        triggerEvent(type) { this.sims.forEach(s => s.triggerEvent(type)); },
+
+        loop() {
+            this.sims.forEach((s, i) => {
+                if (i === 1 && !this.comparing) return;
+
+                // Si están sincronizados, forzar que los parámetros sean iguales excepto los de la variable de comparación
+                if (i === 1 && this.comparing) {
+                    const diffVar = document.getElementById('comp-var').value;
+                    if (diffVar === 'none') {
+                        s.avgConn = this.sims[0].avgConn;
+                        s.algoFactor = this.sims[0].algoFactor;
+                        s.globalCritical = this.sims[0].globalCritical;
+                        s.msgParams = this.sims[0].msgParams;
+                    }
+                }
+
+                s.update();
+                s.render();
+                if (s.running && s.tick % 30 === 0) s.updateStats(i === 0);
+            });
+            requestAnimationFrame(() => this.loop());
+        },
+
+        drawHistory(history, popCount) {
+            const ctx = this.chartCtx, w = this.chartCanvas.width, h = this.chartCanvas.height;
+            ctx.clearRect(0, 0, w, h);
+            if (history.length < 2) return;
+
+                // Draw Informed Area
+                ctx.beginPath(); ctx.fillStyle = 'rgba(59, 130, 246, 0.15)'; ctx.moveTo(0, h);
+            history.forEach((d, i) => ctx.lineTo((i / (history.length-1)) * w, h - (d.informed / popCount) * h));
+            ctx.lineTo(w, h); ctx.fill();
+
+                // Draw Informed Line
+                ctx.beginPath(); ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)'; ctx.lineWidth = 1;
+                history.forEach((d, i) => {
+                    const x = (i / (history.length-1)) * w, y = h - (d.informed / popCount) * h;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+            ctx.beginPath(); ctx.strokeStyle = STATE_COLORS[STATES.ACTIVE]; ctx.lineWidth = 2;
+            history.forEach((d, i) => {
+                const x = (i / (history.length-1)) * w, y = h - (d.active / popCount) * h;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        },
+
+        hexToRgb(hex) {
+            const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+            return `${r}, ${g}, ${b}`;
+        }
+    };
+
+    // Tooltip & Interaction
+    let draggedAgent = null, activeSim = null;
+
+    window.addEventListener('mousedown', (e) => {
+        SimManager.sims.forEach(s => {
+            const rect = s.canvas.getBoundingClientRect();
+            if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+                for (let a of s.agents) {
+                    if (Math.hypot(a.x - mx, a.y - my) < 15) {
+                        draggedAgent = a; activeSim = s;
+                        if (a.state === STATES.UNINFORMED) a.state = STATES.ACTIVE;
+                        else if (a.state === STATES.ACTIVE) a.state = STATES.DEBUNKER;
+                        else a.state = STATES.INACTIVE;
+                        break;
+                    }
+                }
+            }
+        });
+    });
+
+    window.addEventListener('mouseup', () => { draggedAgent = null; activeSim = null; });
+
+    window.addEventListener('mousemove', (e) => {
+        const tt = document.getElementById('tooltip');
+        let found = null;
+
+        SimManager.sims.forEach(s => {
+            const rect = s.canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+            if (draggedAgent && activeSim === s) {
+                draggedAgent.x = mx; draggedAgent.y = my; draggedAgent.px = mx; draggedAgent.py = my;
+            }
+            if (!found && e.clientX >= rect.left && e.clientX <= rect.right) {
+                for (let a of s.agents) { if (Math.hypot(a.x - mx, a.y - my) < 10) { found = a; break; } }
+            }
+        });
+
+        if (found) {
+            tt.style.display = 'block'; tt.style.left = (e.clientX + 10) + 'px'; tt.style.top = (e.clientY + 10) + 'px';
+            const labels = ["No informado", "Recibido", "Activo", "Saturado", "Verificador", "Desmentidor"];
+            let histHtml = found.history.slice(-4).map(h => `<div style="color:var(--text-dim)">- ${h.event}</div>`).join('');
+
+            tt.innerHTML = `
+                <div style="border-bottom: 1px solid var(--accent); margin-bottom: 8px; padding-bottom: 4px; display: flex; justify-content: space-between;">
+                    <strong>AGENTE #${found.id}</strong>
+                    <span style="color: var(--text-dim); font-size: 0.6rem;">Comunidad ${found.community}</span>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.7rem;">
+                    <span>Estado:</span><span style="color:var(--accent); font-weight:bold;">${labels[found.state]}</span>
+                    <span>Influencia:</span><span>${(found.influence*100).toFixed(0)}%</span>
+                    <span>Pens. Crítico:</span><span>${(found.criticalThinking*100).toFixed(0)}%</span>
+                    <span>Educación:</span><span>${(found.education*100).toFixed(0)}%</span>
+                    <span>Memoria:</span><span>${(found.memory*100).toFixed(0)}%</span>
+                    <span>Edad:</span><span>${found.age.toFixed(0)} años</span>
+                </div>
+                <div style="margin-top: 8px; font-size: 0.65rem; border-top: 1px solid var(--border); padding-top: 4px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;">
+                    <strong>Historial Reciente:</strong>
+                    ${histHtml || '<div style="color:var(--text-dim)">Sin actividad</div>'}
+                </div>
+                <div style="margin-top: 8px; display: flex; justify-content: space-between; font-weight: bold; font-size: 0.7rem; color: var(--s-active);">
+                    <span>Alcance: ${found.reachedCount} pers.</span>
+                    <span>Contactos: ${found.contacts.length}</span>
+                </div>
+            `;
+        } else tt.style.display = 'none';
+    });
+
+    SimManager.init();
+
+</script>
+
+</body>
+</html>
