@@ -1,107 +1,175 @@
 /**
- * Animación de Red Neuronal Dinámica para Science Blog NLD
- * Representa la conectividad cerebral y la neuroplasticidad.
+ * Neuro-Sync Engine v4.0 - "The Synaptic Web"
+ * Animación ultra-avanzada con efectos de resplandor (bloom),
+ * profundidad de campo cinemática y propagación de señales bio-eléctricas.
  */
 
 const canvas = document.getElementById('neural-network');
 const ctx = canvas.getContext('2d');
 
 let particles = [];
-const particleCount = 60;
-const connectionDistance = 150;
-const mouse = { x: null, y: null, radius: 150 };
+let pulses = [];
+let mouse = { x: -1000, y: -1000, radius: 280, active: false };
 
-window.addEventListener('mousemove', (event) => {
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = event.clientX - rect.left;
-    mouse.y = event.clientY - rect.top;
-});
-
-window.addEventListener('resize', () => {
-    resizeCanvas();
-});
-
-function resizeCanvas() {
-    const parent = canvas.parentElement;
-    const oldWidth = canvas.width;
-    const oldHeight = canvas.height;
-
-    canvas.width = parent.offsetWidth;
-    canvas.height = parent.offsetHeight;
-
-    if (particles.length === 0) {
-        init();
-    } else {
-        // Ajustar posición de partículas existentes para evitar el "salto" visual
-        const scaleX = canvas.width / oldWidth;
-        const scaleY = canvas.height / oldHeight;
-
-        for (let p of particles) {
-            p.x *= scaleX;
-            p.y *= scaleY;
-        }
+const CONFIG = {
+    particleCount: 150,
+    connectionDist: 220,
+    pulseSpeed: 0.015,
+    bgAlpha: 0.1,
+    colors: {
+        nodes: ['#38bdf8', '#818cf8', '#6366f1', '#0ea5e9'],
+        pulse: '#fb923c',
+        glow: 'rgba(56, 189, 248, 0.4)'
     }
-}
+};
 
 class Particle {
     constructor() {
+        this.reset();
+    }
+
+    reset() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 1;
-        this.speedX = Math.random() * 1 - 0.5;
-        this.speedY = Math.random() * 1 - 0.5;
+        this.z = Math.random(); // 0 (lejos) a 1 (cerca)
+        this.baseSize = (Math.random() * 2.5 + 0.5) * (0.3 + this.z);
+        this.size = this.baseSize;
+        this.vx = (Math.random() - 0.5) * (0.2 + this.z * 0.4);
+        this.vy = (Math.random() - 0.5) * (0.2 + this.z * 0.4);
+        this.color = CONFIG.colors.nodes[Math.floor(Math.random() * CONFIG.colors.nodes.length)];
+        this.pulseTimer = Math.random() * 600 + 200;
+        this.neighbors = [];
     }
 
     update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
+        this.x += this.vx;
+        this.y += this.vy;
 
+        // Warp effect
+        if (this.x < 0) this.x = canvas.width;
         if (this.x > canvas.width) this.x = 0;
-        else if (this.x < 0) this.x = canvas.width;
+        if (this.y < 0) this.y = canvas.height;
         if (this.y > canvas.height) this.y = 0;
-        else if (this.y < 0) this.y = canvas.height;
 
-        // Interacción con el ratón
+        // Mouse Interactivity
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < mouse.radius) {
-            if (mouse.x < this.x && this.x < canvas.width - this.size * 10) this.x += 0.5;
-            if (mouse.x > this.x && this.x > this.size * 10) this.x -= 0.5;
-            if (mouse.y < this.y && this.y < canvas.height - this.size * 10) this.y += 0.5;
-            if (mouse.y > this.y && this.y > this.size * 10) this.y -= 0.5;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        if (dist < mouse.radius) {
+            const force = (mouse.radius - dist) / mouse.radius;
+            this.vx += dx * force * 0.0005;
+            this.vy += dy * force * 0.0005;
+            this.size = this.baseSize * (1 + force * 0.8);
+        } else {
+            this.size = this.baseSize;
+        }
+
+        this.pulseTimer--;
+        if (this.pulseTimer <= 0) {
+            this.emitPulse();
+            this.pulseTimer = Math.random() * 500 + 300;
         }
     }
 
     draw() {
-        ctx.fillStyle = 'rgba(230, 126, 34, 0.8)'; // Color de acento (naranja)
+        const opacity = 0.2 + this.z * 0.8;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = opacity;
+
+        if (this.z > 0.7) {
+            ctx.shadowBlur = 15 * this.z;
+            ctx.shadowColor = this.color;
+        }
+
         ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+    }
+
+    emitPulse() {
+        if (this.neighbors.length > 0) {
+            const numPulses = Math.floor(Math.random() * 2) + 1;
+            for(let i=0; i<numPulses; i++) {
+                const target = this.neighbors[Math.floor(Math.random() * this.neighbors.length)];
+                pulses.push(new Pulse(this, target));
+            }
+        }
+    }
+}
+
+class Pulse {
+    constructor(start, end) {
+        this.start = start;
+        this.end = end;
+        this.progress = 0;
+        this.speed = CONFIG.pulseSpeed * (0.7 + Math.random() * 0.6);
+        this.width = 1.5 + Math.random() * 2;
+    }
+
+    update() {
+        this.progress += this.speed;
+        return this.progress < 1;
+    }
+
+    draw() {
+        const x = this.start.x + (this.end.x - this.start.x) * this.progress;
+        const y = this.start.y + (this.end.y - this.start.y) * this.progress;
+
+        // El pulso es un cometa de luz
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, this.width * 4);
+        gradient.addColorStop(0, CONFIG.colors.pulse);
+        gradient.addColorStop(1, 'transparent');
+
+        ctx.beginPath();
+        ctx.arc(x, y, this.width, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = CONFIG.colors.pulse;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Estela
+        ctx.beginPath();
+        ctx.moveTo(this.start.x, this.start.y);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = `rgba(251, 146, 60, ${0.3 * (1 - this.progress)})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
     }
 }
 
 function init() {
+    const parent = canvas.parentElement;
+    canvas.width = parent.offsetWidth;
+    canvas.height = parent.offsetHeight;
     particles = [];
-    for (let i = 0; i < particleCount; i++) {
+    for(let i=0; i<CONFIG.particleCount; i++) {
         particles.push(new Particle());
     }
 }
 
 function connect() {
-    for (let a = 0; a < particles.length; a++) {
-        for (let b = a; b < particles.length; b++) {
-            const dx = particles[a].x - particles[b].x;
-            const dy = particles[a].y - particles[b].y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+    ctx.lineCap = 'round';
+    for (let i = 0; i < particles.length; i++) {
+        particles[i].neighbors = [];
+        for (let j = i + 1; j < particles.length; j++) {
+            const p1 = particles[i];
+            const p2 = particles[j];
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
 
-            if (distance < connectionDistance) {
-                const opacity = 1 - (distance / connectionDistance);
-                ctx.strokeStyle = `rgba(44, 62, 80, ${opacity * 0.2})`; // Color primario con transparencia
-                ctx.lineWidth = 1;
+            if (dist < CONFIG.connectionDist) {
+                p1.neighbors.push(p2);
+                const alpha = (1 - dist / CONFIG.connectionDist) * 0.15 * p1.z * p2.z;
+                ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+                ctx.lineWidth = 0.2 + (p1.z + p2.z) * 0.5;
                 ctx.beginPath();
-                ctx.moveTo(particles[a].x, particles[a].y);
-                ctx.lineTo(particles[b].x, particles[b].y);
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
                 ctx.stroke();
             }
         }
@@ -109,14 +177,60 @@ function connect() {
 }
 
 function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-    }
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Fondo ambiental (niebla neural)
+    const midX = canvas.width / 2;
+    const midY = canvas.height / 2;
+    const grad = ctx.createRadialGradient(midX, midY, 0, midX, midY, canvas.width);
+    grad.addColorStop(0, 'rgba(15, 23, 42, 0)');
+    grad.addColorStop(1, 'rgba(2, 6, 23, 1)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     connect();
+
+    particles.forEach(p => {
+        p.update();
+        p.draw();
+    });
+
+    pulses = pulses.filter(p => {
+        const active = p.update();
+        if (active) p.draw();
+        return active;
+    });
+
     requestAnimationFrame(animate);
 }
 
-resizeCanvas();
+window.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+    mouse.active = true;
+});
+
+window.addEventListener('mouseleave', () => {
+    mouse.active = false;
+    mouse.x = -1000;
+    mouse.y = -1000;
+});
+
+window.addEventListener('mousedown', () => {
+    // Al hacer clic, enviamos ondas masivas
+    particles.forEach(p => {
+        const dx = mouse.x - p.x;
+        const dy = mouse.y - p.y;
+        if(Math.sqrt(dx*dx + dy*dy) < mouse.radius) {
+            p.emitPulse();
+            p.emitPulse();
+        }
+    });
+});
+
+window.addEventListener('resize', init);
+
+init();
 animate();

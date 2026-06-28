@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science Blog NLD | Divulgación Científica</title>
+    <style>
+        /* Estilos Profesionales para Science Blog NLD */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #e67e22;
+            --text-color: #333;
+            --bg-color: #f4f7f6;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+        }
+
+        header {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        nav {
+            background: var(--secondary-color);
+            padding: 0.8rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            margin: 0 1.5rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent-color);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .hero {
+            position: relative;
+            text-align: center;
+            padding: 5rem 1rem;
+            overflow: hidden;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+        }
+
+        #neural-network {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2rem;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            display: inline-block;
+        }
+
+        .hero h2 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .article-card {
+            border-top: 5px solid var(--accent-color);
+            transition: transform 0.3s;
+        }
+
+        .article-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .article-card h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--accent-color);
+            color: var(--white);
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 1rem;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #d35400;
+        }
+
+        footer {
+            background: var(--primary-color);
+            color: var(--white);
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2rem; }
+            nav a { margin: 0 0.5rem; display: block; padding: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Science Blog NLD</h1>
+        <p>Divulgación Científica de Vanguardia</p>
+    </header>
+
+    <nav>
+        <a href="#">Inicio</a>
+        <a href="#articulos">Artículos</a>
+        <a href="#sobre-mi">Sobre el Autor</a>
+    </nav>
+
+    <div class="container">
+        <section class="card hero">
+            <canvas id="neural-network"></canvas>
+            <div class="hero-content">
+                <h2>Explorando las Fronteras de la Ciencia</h2>
+                <p>Un espacio dedicado al análisis profundo de la neurociencia, la psicología y el impacto de la tecnología en el comportamiento humano.</p>
+            </div>
+        </section>
+
+        <h2 id="articulos" style="margin-bottom: 1.5rem;">Últimas Publicaciones</h2>
+        <div class="article-grid">
+            <article class="card article-card">
+                <h3>Neuroplasticidad: El Cerebro en Evolución Constante</h3>
+                <p>Un análisis exhaustivo sobre cómo las experiencias y el entorno remodelan físicamente nuestra estructura cerebral a lo largo de toda la vida.</p>
+                <a href="#" class="btn">Leer más</a>
+            </article>
+
+            <article class="card article-card">
+                <h3>Epigenética Conductual: La Herencia del Entorno</h3>
+                <p>Exploramos los mecanismos moleculares que permiten que nuestras experiencias vivenciales modifiquen la expresión de nuestros genes.</p>
+                <a href="#" class="btn">Leer más</a>
+            </article>
+        </div>
+
+        <section id="sobre-mi" class="card" style="margin-top: 3rem;">
+            <h2>Sobre el Dr. Juan Moisés de la Serna</h2>
+            <p>Doctor en Psicología, especialista en Neurociencia Cognitiva y del Comportamiento. Investigador y profesor universitario con una extensa labor de divulgación en medios internacionales.</p>
+            <p style="margin-top: 1rem;">Miembro de diversas instituciones científicas, su trabajo se centra en acercar la ciencia compleja a un lenguaje accesible sin perder el rigor académico.</p>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Science Blog NLD - Dr. Juan Moisés de la Serna<br>Universidad Internacional de La Rioja (UNIR)</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('neural-network');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const particleCount = 60;
+        const connectionDistance = 150;
+        const mouse = { x: null, y: null, radius: 150 };
+
+        window.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = event.clientX - rect.left;
+            mouse.y = event.clientY - rect.top;
+        });
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        function resizeCanvas() {
+            const parent = canvas.parentElement;
+            const oldWidth = canvas.width;
+            const oldHeight = canvas.height;
+
+            canvas.width = parent.offsetWidth;
+            canvas.height = parent.offsetHeight;
+
+            if (particles.length === 0) {
+                init();
+            } else {
+                const scaleX = canvas.width / oldWidth;
+                const scaleY = canvas.height / oldHeight;
+                for (let p of particles) {
+                    p.x *= scaleX;
+                    p.y *= scaleY;
+                }
+            }
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > canvas.width) this.x = 0;
+                else if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                else if (this.y < 0) this.y = canvas.height;
+
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    if (mouse.x < this.x && this.x < canvas.width - this.size * 10) this.x += 0.5;
+                    if (mouse.x > this.x && this.x > this.size * 10) this.x -= 0.5;
+                    if (mouse.y < this.y && this.y < canvas.height - this.size * 10) this.y += 0.5;
+                    if (mouse.y > this.y && this.y > this.size * 10) this.y -= 0.5;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = 'rgba(230, 126, 34, 0.8)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function connect() {
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    const dx = particles[a].x - particles[b].x;
+                    const dy = particles[a].y - particles[b].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < connectionDistance) {
+                        const opacity = 1 - (distance / connectionDistance);
+                        ctx.strokeStyle = `rgba(44, 62, 80, ${opacity * 0.2})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            connect();
+            requestAnimationFrame(animate);
+        }
+
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>
