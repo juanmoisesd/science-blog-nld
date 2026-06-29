@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOCIODYNAMICS: Simulación Avanzada de Difusión Social</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
-
         :root {
             --bg: #05070a;
             --panel: rgba(13, 17, 23, 0.75);
@@ -28,7 +26,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             height: 100vh;
@@ -122,7 +120,7 @@
             font-size: 0.8rem;
             margin-bottom: 8px;
         }
-        .control-label span:last-child { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+        .control-label span:last-child { font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco, Consolas, 'DejaVu Sans Mono', monospace; color: var(--accent); }
 
         input[type="range"] {
             width: 100%;
@@ -174,7 +172,7 @@
             border: 1px solid var(--border);
             border-radius: 8px;
         }
-        .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 700; display: block; }
+        .stat-val { font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco, Consolas, 'DejaVu Sans Mono', monospace; font-size: 1.2rem; font-weight: 700; display: block; }
         .stat-lbl { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
 
         /* --- OVERLAYS --- */
@@ -360,6 +358,38 @@
             <div class="control-label"><span>Pensamiento Crítico (Media)</span><span id="val-critical">30%</span></div>
             <input type="range" id="critical-range" min="0" max="100" value="30">
         </div>
+
+        <div class="control-group">
+            <div class="control-label"><span>Velocidad Simulación</span><span id="val-speed-sim">1.0x</span></div>
+            <input type="range" id="speed-sim-range" min="0.1" max="5.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label"><span>Prob. Compartir</span><span id="val-share">60%</span></div>
+            <input type="range" id="share-range" min="0" max="100" value="60">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label"><span>Prob. Verificar</span><span id="val-verify">20%</span></div>
+            <input type="range" id="verify-range" min="0" max="100" value="20">
+        </div>
+
+        <div class="control-group">
+            <div class="control-label"><span>Fatiga Informativa</span><span id="val-fatigue">50%</span></div>
+            <input type="range" id="fatigue-range" min="0" max="100" value="50">
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Configuración de Red</div>
+        <div class="control-group">
+            <div class="control-label"><span>Influencia Líderes</span><span id="val-inf-power">80%</span></div>
+            <input type="range" id="inf-power-range" min="0" max="100" value="80">
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>Superdifusores (Hubs)</span><span id="val-hubs">5</span></div>
+            <input type="range" id="hubs-range" min="0" max="20" value="5">
+        </div>
     </div>
 
     <div class="section">
@@ -369,6 +399,8 @@
                 <button class="event-btn" onclick="SimManager.triggerEvent('influencer')">Influencer</button>
                 <button class="event-btn" onclick="SimManager.triggerEvent('bloqueo')">Bloqueo</button>
                 <button class="event-btn" onclick="SimManager.triggerEvent('institucional')">Campaña</button>
+                <button class="event-btn" onclick="SimManager.triggerEvent('medios')">Medios</button>
+                <button class="event-btn" onclick="SimManager.triggerEvent('censura')">Censura</button>
         </div>
     </div>
 
@@ -376,16 +408,17 @@
             <div class="section-title">Variable de Comparación</div>
             <select id="comp-var">
                 <option value="none">Sin diferencia (Sincronizado)</option>
-                <option value="critical">Pensamiento Crítico (+50% en B)</option>
-                <option value="connectivity">Conectividad (Doble en B)</option>
-                <option value="algo">Algoritmo (Cámaras de Eco en B)</option>
-                <option value="verifiers">Más Verificadores en B</option>
+                <option value="critical">Población Crítica vs Crédula</option>
+                <option value="connectivity">Red Conectada vs Dispersa</option>
+                <option value="algo">Burbuja Informativa vs Red Abierta</option>
+                <option value="verifiers">Muchos Verificadores vs Ninguno</option>
+                <option value="hubs">Con Líderes vs Sin Líderes</option>
             </select>
         </div>
 
     <div class="section" style="border-bottom: none;">
         <div class="section-title">Métricas de Difusión</div>
-        <div class="stats-row">
+        <div class="stats-row" style="grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
             <div class="stat-box">
                 <span class="stat-val" id="stat-informed">0</span>
                 <span class="stat-lbl">Informados</span>
@@ -399,12 +432,24 @@
                 <span class="stat-lbl">Alcance</span>
             </div>
             <div class="stat-box">
+                <span class="stat-val" id="stat-verifiers">0</span>
+                <span class="stat-lbl">Verificando</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="stat-debunkers">0</span>
+                <span class="stat-lbl">Desmintiendo</span>
+            </div>
+            <div class="stat-box">
                 <span class="stat-val" id="stat-speed">0.0</span>
-                <span class="stat-lbl">Vel. Viral</span>
+                <span class="stat-lbl">Velocidad</span>
             </div>
         </div>
         <div id="chart-container">
             <canvas id="chart-canvas"></canvas>
+        </div>
+
+        <div id="histogram-container" style="height: 60px; margin-top: 5px; width: 100%;">
+            <canvas id="histogram-canvas"></canvas>
         </div>
 
         <div id="milestones" style="margin-top: 10px; font-size: 0.65rem; color: var(--text-dim); display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
@@ -432,24 +477,24 @@
     <div class="modal-content">
         <h2 style="font-size: 1.8rem; margin-bottom: 20px; color: var(--accent);">Manual de Epidemiología Social</h2>
         <div style="line-height: 1.7; font-size: 0.95rem;">
-            <p>Bienvenido a <strong>SOCIODYNAMICS</strong>. Esta herramienta simula la propagación de información utilizando modelos matemáticos de redes complejas.</p>
+            <p>Bienvenido a <strong>SOCIODYNAMICS</strong>. Esta plataforma es una herramienta de <em>diseminación científica</em> diseñada para explorar la sociodinámica de la información en redes complejas.</p>
 
-            <h3 style="margin-top: 25px; color: var(--s-received);">Diferencia entre Rumor y Noticia</h3>
-            <p>Los rumores suelen apelar al <em>sesgo de confirmación</em> y las emociones fuertes, lo que reduce el tiempo de reflexión y aumenta la viralidad. En esta simulación, verás que los rumores viajan más rápido pero se agotan antes.</p>
+            <h3 style="margin-top: 25px; color: var(--s-received);">1. Modelos Epidemiológicos Sociales</h3>
+            <p>La simulación adapta modelos SIR (Susceptible, Infectado, Recuperado) a la información. Aquí, un individuo "susceptible" es alguien **no informado**, el "infectado" es quien **comparte activamente** y el "recuperado" es quien ha perdido interés (**saturado**).</p>
 
-            <h3 style="margin-top: 25px; color: var(--accent);">El Algoritmo de Recomendación</h3>
-            <p>Representa las "Cámaras de Eco". A mayor porcentaje, el sistema tenderá a conectar a personas con las mismas ideas, dificultando que una corrección o desmentido penetre en comunidades cerradas.</p>
+            <h3 style="margin-top: 25px; color: var(--accent);">2. Cámaras de Eco y Algoritmos</h3>
+            <p>El **Algoritmo de Recomendación** simula el filtrado que realizan las redes sociales modernas. Un valor alto crea "cámaras de eco", donde la información solo circula entre individuos con ideas similares, reforzando prejuicios y dificultando la entrada de desmentidos o noticias contrastadas.</p>
 
-            <h3 style="margin-top: 25px; color: var(--s-verifier);">Verificadores y Desmentidores</h3>
-            <p>Los individuos con alto <strong>Pensamiento Crítico</strong> actúan como cortafuegos. No solo filtran la información (verificadores), sino que pueden activamente propagar la verdad para neutralizar el rumor (desmentidores).</p>
+            <h3 style="margin-top: 25px; color: var(--s-verifier);">3. El Papel del Pensamiento Crítico</h3>
+            <p>El pensamiento crítico actúa como un sistema inmunitario social. Los **verificadores** (verde) introducen un retraso necesario para contrastar fuentes, mientras que los **desmentidores** (morado) compiten activamente contra la desinformación, intentando "curar" a los infectados por rumores o noticias falsas.</p>
 
-            <h3 style="margin-top: 25px; color: var(--s-active);">Dinámica Viral vs. Innovación</h3>
-            <p>Mientras que los <strong>Memes</strong> y <strong>Rumores</strong> dependen de la curiosidad y la baja resistencia, la <strong>Innovación</strong> se basa en el beneficio percibido. Podrás observar cómo las innovaciones tardan más en "cuajar" pero tienen una permanencia mucho más sólida en la red.</p>
+            <h3 style="margin-top: 25px; color: var(--s-active);">4. Viralidad vs. Adopción</h3>
+            <p>Los **Rumores** y **Memes** explotan sesgos cognitivos rápidos (Sistema 1 de Kahneman), logrando picos de viralidad inmensos pero efímeros. Las **Innovaciones**, en cambio, requieren una evaluación de coste-beneficio (Sistema 2), propagándose más lentamente pero logrando una mayor estabilidad estructural en la red.</p>
 
-            <h3 style="margin-top: 25px; color: var(--accent);">Líderes de Opinión (Hubs)</h3>
-            <p>Son los nodos con más conexiones. Un solo influencer infectado puede cambiar el curso de la simulación, saltando entre comunidades y acelerando la velocidad de difusión exponencialmente.</p>
+            <h3 style="margin-top: 25px; color: var(--accent);">5. Topología de Red: Puentes y Hubs</h3>
+            <p>No todos los individuos influyen igual. Los **Líderes de Opinión** (Hubs) son esenciales por su número de conexiones, pero los "Puentes" entre comunidades aisladas son los que permiten que una noticia local se convierta en un fenómeno global.</p>
 
-            <button onclick="document.getElementById('modal').style.display='none'" class="primary" style="margin-top: 30px;">Comprendido, empezar simulación</button>
+            <button onclick="document.getElementById('modal').style.display='none'" class="primary" style="margin-top: 30px;">Comprendido, iniciar experimentación</button>
         </div>
     </div>
 </div>
@@ -489,6 +534,7 @@
             this.contacts = [];
             this.infectedBy = null;
             this.receivedAt = 0;
+            this.targetTick = 0; // Para transiciones síncronas con el motor
             this.history = []; // Historial de estados/eventos
 
             // Perfil Psicológico y Demográfico
@@ -568,26 +614,24 @@
             const msg = world.msgParams;
             const type = document.getElementById('msg-type').value;
 
+            // 1. Decisión de IGNORAR vs LEER
+            const bond = this.community === target.community ? 1.2 : 0.8;
+            const readProb = target.curiosity * bond * (1 + this.influence * 0.2);
+        if (Math.random() > readProb) return;
+
+            // 2. Decisión de CREER
             const activeFriends = target.contacts.filter(cid => world.agents[cid].state === STATES.ACTIVE).length;
             const socialProof = activeFriends / target.contacts.length;
 
-            let prob = msg.baseProb * (1 + this.influence) * target.curiosity;
+            let beliefProb = msg.baseProb * (1 + this.influence) * (1 + socialProof * 0.5);
+            if (type === 'innovacion') beliefProb = msg.baseProb * target.benefitPerception * (1 + socialProof);
 
-            // Lógica específica por tipo
-            if (type === 'innovacion') {
-                prob = msg.baseProb * target.benefitPerception * (1 + socialProof);
-            } else {
-                prob += socialProof * 0.4;
-            }
+            const ageResistance = target.age > 55 ? 0.15 : 0;
+            const criticalResistance = (target.criticalThinking * 0.7 + target.education * 0.3 + ageResistance) * world.globalCritical;
+            beliefProb -= criticalResistance;
 
-            if (this.isInfluencer) prob *= (1 + this.influence);
-
-            // Resistencia: Pensamiento crítico, Educación y Edad (los mayores suelen ser más escépticos o cautos según el modelo)
-            const ageResistance = target.age > 50 ? 0.1 : 0;
-            const resistance = (target.criticalThinking * 0.6 + target.education * 0.3 + ageResistance) * world.globalCritical;
-            prob -= resistance;
-
-            if (Math.random() < prob) {
+            if (Math.random() < beliefProb) {
+                // Cree la información
                 target.receiveInfo(this, world);
                 this.sharedCount++;
                 this.reachedCount++;
@@ -611,32 +655,31 @@
             this.receivedAt = world.tick;
             this.history.push({ t: world.tick, event: "Recibió información de " + sender.id });
 
-            // Decisión de verificación (Slow thinking vs Fast thinking)
-            const verifyProb = (this.criticalThinking * 0.8 + this.education * 0.2) * (1 - world.msgParams.viralFactor);
+            // 3. Decisión de VERIFICAR (antes de compartir)
+            const verifyProb = (this.criticalThinking * 0.8 + this.education * 0.2) * (1 - world.msgParams.viralFactor) * world.probVerify * 3;
 
-            if (Math.random() < verifyProb * (world.globalCritical * 2)) {
+            if (Math.random() < verifyProb) {
                 this.state = STATES.VERIFIER;
                 this.history.push({ t: world.tick, event: "Verificó la noticia" });
 
-                if (world.msgParams.isDeceptive && Math.random() > 0.4) {
-                    setTimeout(() => {
-                        if(this.state === STATES.VERIFIER) {
-                            this.state = STATES.DEBUNKER;
-                            this.history.push({ t: world.tick + 100, event: "Se convirtió en desmentidor" });
-                        }
-                    }, 1000);
+                // Si verifica y la noticia es falsa, se vuelve desmentidor tras un tiempo
+                if (world.msgParams.isDeceptive && Math.random() > 0.3) {
+                    this.targetTick = world.tick + 60; // ~1 seg a 60fps
                 }
                 return;
             }
 
+            // 4. Decisión de COMPARTIR (Activar)
             this.state = STATES.RECEIVED;
-            const readTime = 500 + (1 - this.curiosity) * 1500;
-            setTimeout(() => {
-                if (this.state === STATES.RECEIVED) {
-                    this.state = STATES.ACTIVE;
-                    this.history.push({ t: world.tick + 50, event: "Comenzó a compartir" });
-                }
-            }, readTime);
+            const shareDecisionProb = world.probShare * (1 + this.influence) * (this.curiosity * 0.5 + 0.5);
+
+            if (Math.random() < shareDecisionProb) {
+                const readTicks = 30 + (1 - this.curiosity) * 90;
+                this.targetTick = world.tick + readTicks;
+            } else {
+                // Lo cree pero no lo comparte tras un tiempo de reflexión
+                this.targetTick = world.tick + 120;
+            }
         }
 
         tryCure(target, world) {
@@ -659,11 +702,32 @@
         }
 
         updateBehavior(world) {
+            // Manejo de transiciones basadas en ticks
+            if (this.targetTick > 0 && world.tick >= this.targetTick) {
+                if (this.state === STATES.VERIFIER) {
+                    this.state = STATES.DEBUNKER;
+                    this.history.push({ t: world.tick, event: "Se convirtió en desmentidor" });
+                } else if (this.state === STATES.RECEIVED) {
+                    const shareDecisionProb = world.probShare * (1 + this.influence) * (this.curiosity * 0.5 + 0.5);
+                    // Re-evaluar si se comparte o se queda inactivo (ya se decidió el targetTick)
+                    if (Math.random() < 0.8) { // Alta prob de confirmar la decisión previa
+                         this.state = STATES.ACTIVE;
+                         this.history.push({ t: world.tick, event: "Comenzó a compartir" });
+                    } else {
+                         this.state = STATES.INACTIVE;
+                    }
+                } else if (this.state === STATES.ACTIVE) {
+                    // Ya manejado por fatiga, pero se puede usar para otros eventos
+                }
+                this.targetTick = 0;
+            }
+
             if (this.state === STATES.ACTIVE) {
-                // La fatiga depende del tiempo y la persistencia del mensaje
-                this.fatigue += 0.001 / world.msgParams.persistence;
+                // La fatiga depende del tiempo, la persistencia del mensaje y la tasa global de fatiga
+                this.fatigue += (0.001 * world.fatigueRate * 2) / world.msgParams.persistence;
                 if (this.fatigue > 1.0) {
                     this.state = STATES.INACTIVE;
+                    this.history.push({ t: world.tick, event: "Saturación informativa" });
                 }
             }
         }
@@ -714,6 +778,13 @@
             this.clusterFactor = 0.7;
             this.globalCritical = 0.3;
             this.algoFactor = 0.4;
+
+            this.probShare = 0.6;
+            this.probVerify = 0.2;
+            this.fatigueRate = 0.5;
+            this.leaderInfluence = 0.8;
+            this.hubCount = 5;
+
             this.msgParams = {};
         }
 
@@ -749,18 +820,27 @@
                 // Aplicar diferencia si es Instancia B
                 if (this.id === 'canvas-2') {
                     const diffVar = document.getElementById('comp-var').value;
-                    if (diffVar === 'critical') agent.criticalThinking = Math.min(1, agent.criticalThinking * 1.6);
-                    if (diffVar === 'verifiers' && Math.random() < 0.3) agent.criticalThinking = 0.95;
+                    if (diffVar === 'critical') agent.criticalThinking = Math.min(1, agent.criticalThinking * 1.8);
+                    if (diffVar === 'verifiers' && Math.random() < 0.4) agent.criticalThinking = 0.98;
+                    if (diffVar === 'hubs') agent.isInfluencer = false;
+                } else if (this.id === 'canvas-1') {
+                    const diffVar = document.getElementById('comp-var').value;
+                    if (diffVar === 'critical') agent.criticalThinking *= 0.3;
+                    if (diffVar === 'verifiers') agent.criticalThinking = 0.05;
                 }
 
                 this.agents.push(agent);
             }
 
-            // Aplicar variables de red específicas para B
+            // Aplicar variables de red específicas
+            const diffVar = document.getElementById('comp-var').value;
             if (this.id === 'canvas-2') {
-                const diffVar = document.getElementById('comp-var').value;
                 if (diffVar === 'connectivity') this.avgConn *= 2;
-                if (diffVar === 'algo') this.algoFactor = 0.95;
+                if (diffVar === 'algo') this.algoFactor = 0.98;
+                if (diffVar === 'hubs') this.hubCount = 0;
+            } else if (this.id === 'canvas-1') {
+                if (diffVar === 'connectivity') this.avgConn = Math.max(2, this.avgConn / 2);
+                if (diffVar === 'algo') this.algoFactor = 0.05;
             }
 
             this.generateNetwork();
@@ -768,7 +848,6 @@
         }
 
         generateNetwork() {
-            // Optimización: agrupar por comunidad para evitar filtros O(N) dentro del bucle
             const commGroups = {};
             this.agents.forEach(a => {
                 if (!commGroups[a.community]) commGroups[a.community] = [];
@@ -791,11 +870,10 @@
                 }
             }
 
-            const hubCount = Math.ceil(this.popCount / 100);
-            for (let i = 0; i < hubCount; i++) {
+            for (let i = 0; i < this.hubCount; i++) {
                 const hub = this.agents[Math.floor(Math.random() * this.agents.length)];
-                hub.isInfluencer = true; hub.radius = 8; hub.influence = 0.8 + Math.random() * 0.2;
-                for (let k = 0; k < 20; k++) this.addLink(hub.id, Math.floor(Math.random() * this.agents.length));
+                hub.isInfluencer = true; hub.radius = 8; hub.influence = this.leaderInfluence;
+                for (let k = 0; k < 30; k++) this.addLink(hub.id, Math.floor(Math.random() * this.agents.length));
             }
         }
 
@@ -841,24 +919,24 @@
             if (type === 'desmentido') {
                 this.agents.filter(a => a.state === STATES.VERIFIER || a.criticalThinking > 0.5).forEach(a => {
                     a.state = STATES.DEBUNKER;
-                    // Onda expansiva morada masiva para el evento
-                    this.waves.push({
-                        x: a.x, y: a.y,
-                        r: 0, maxR: 150,
-                        alpha: 0.6,
-                        color: STATE_COLORS[STATES.DEBUNKER],
-                        thick: 2
-                    });
+                    this.waves.push({ x: a.x, y: a.y, r: 0, maxR: 150, alpha: 0.6, color: STATE_COLORS[STATES.DEBUNKER], thick: 2 });
                 });
             } else if (type === 'influencer') {
                 const idx = Math.floor(Math.random() * this.agents.length);
-                const a = this.agents[idx]; a.isInfluencer = true; a.radius = 10; a.state = STATES.ACTIVE;
+                const a = this.agents[idx]; a.isInfluencer = true; a.radius = 10; a.state = STATES.ACTIVE; a.influence = 1.0;
                 for(let i=0; i<50; i++) this.addLink(idx, Math.floor(Math.random()*this.agents.length));
             } else if (type === 'bloqueo') {
-                const top = [...this.agents].sort((a,b) => b.sharedCount - a.sharedCount).slice(0, 5);
-                top.forEach(a => a.state = STATES.INACTIVE);
+                const top = [...this.agents].sort((a,b) => b.sharedCount - a.sharedCount).slice(0, 10);
+                top.forEach(a => { a.state = STATES.INACTIVE; a.radius = 2; });
             } else if (type === 'institucional') {
-                this.agents.filter(a => Math.random() < 0.2).forEach(a => { if(a.state === STATES.UNINFORMED) a.state = STATES.VERIFIER; });
+                this.agents.filter(a => Math.random() < 0.3).forEach(a => { if(a.state === STATES.UNINFORMED) a.state = STATES.VERIFIER; });
+            } else if (type === 'medios') {
+                for(let i=0; i<30; i++) {
+                    const a = this.agents[Math.floor(Math.random()*this.agents.length)];
+                    if(a.state === STATES.UNINFORMED) a.state = STATES.VERIFIER;
+                }
+            } else if (type === 'censura') {
+                this.agents.forEach(a => { if(a.state === STATES.ACTIVE && Math.random() < 0.5) a.state = STATES.INACTIVE; });
             }
         }
 
@@ -918,6 +996,19 @@
                     ctx.moveTo(this.agents[i].x, this.agents[i].y);
                     ctx.lineTo(this.agents[j].x, this.agents[j].y);
                     ctx.stroke();
+
+                    // Pulso de onda viajando por la conexión
+                    const pulseOffset = (this.tick * 0.05) % 1;
+                    const p1 = this.agents[i], p2 = this.agents[j];
+                    // Si i fue infectado por j, la onda va de j a i, y viceversa
+                    const source = p1.infectedBy === p2.id ? p2 : p1;
+                    const target = source === p1 ? p2 : p1;
+
+                    const wx = lerp(source.x, target.x, pulseOffset);
+                    const wy = lerp(source.y, target.y, pulseOffset);
+
+                    ctx.fillStyle = 'rgba(255, 255, 255, ' + recency + ')';
+                    ctx.beginPath(); ctx.arc(wx, wy, 2, 0, Math.PI * 2); ctx.fill();
                 } else {
                     ctx.beginPath();
                     ctx.strokeStyle = 'rgba(255,255,255,0.02)';
@@ -960,14 +1051,17 @@
 
                     // Halo para Influencers / Líderes de Opinión
                     if (a.isInfluencer) {
-                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-                        ctx.lineWidth = 2;
-                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 3, 0, Math.PI * 2); ctx.stroke();
+                        ctx.shadowBlur = 15; ctx.shadowColor = 'white';
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 4, 0, Math.PI * 2); ctx.stroke();
+                        ctx.shadowBlur = 0;
 
-                        // Halo exterior animado
-                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-                        ctx.setLineDash([5, 5]);
-                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 6, this.tick * 0.05, this.tick * 0.05 + Math.PI * 2); ctx.stroke();
+                        // Halo exterior animado (Doble anillo para superdifusores)
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.setLineDash([4, 4]);
+                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 8, this.tick * 0.04, this.tick * 0.04 + Math.PI * 2); ctx.stroke();
+                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 12, -this.tick * 0.02, -this.tick * 0.02 + Math.PI * 2); ctx.stroke();
                         ctx.setLineDash([]);
                     }
                 });
@@ -978,7 +1072,10 @@
             const informedAgents = this.agents.filter(a => a.state !== STATES.UNINFORMED);
             const informed = informedAgents.length;
             const active = this.agents.filter(a => a.state === STATES.ACTIVE).length;
-            this.history.push({ informed, active });
+            const verifiers = this.agents.filter(a => a.state === STATES.VERIFIER).length;
+            const debunkers = this.agents.filter(a => a.state === STATES.DEBUNKER).length;
+
+            this.history.push({ informed, active, verifiers, debunkers });
             if (this.history.length > 150) this.history.shift();
 
             // Milestones
@@ -991,6 +1088,8 @@
             if (isPrimary) {
                 document.getElementById('stat-informed').textContent = informed;
                 document.getElementById('stat-active').textContent = active;
+                document.getElementById('stat-verifiers').textContent = verifiers;
+                document.getElementById('stat-debunkers').textContent = debunkers;
                 document.getElementById('stat-reach').textContent = (p * 100).toFixed(1) + "%";
 
                 const top = [...this.agents].sort((a,b) => b.sharedCount - a.sharedCount)[0];
@@ -1010,6 +1109,8 @@
                 document.getElementById('stat-unreached').textContent = this.popCount - informed;
                 document.getElementById('stat-max-size').textContent = Math.max(informed, parseInt(document.getElementById('stat-max-size').textContent || 0));
 
+                SimManager.drawHistogram(this);
+
                 document.getElementById('m-25').textContent = this.milestones.p25 || '-';
                 document.getElementById('m-50').textContent = this.milestones.p50 || '-';
                 document.getElementById('m-75').textContent = this.milestones.p75 || '-';
@@ -1022,7 +1123,7 @@
                     document.getElementById('stat-speed').textContent = ((last - prev) / 30 * 100).toFixed(2);
                 }
 
-                SimManager.drawHistory(this.history, this.popCount);
+                SimManager.drawHistory(this.popCount);
             }
         }
 
@@ -1049,13 +1150,17 @@
     const SimManager = {
         sims: [],
         comparing: false,
+        simSpeed: 1.0,
         chartCanvas: null, chartCtx: null,
+        histCanvas: null, histCtx: null,
 
         init() {
             this.sims.push(new SocialSim('canvas-1'));
             this.sims.push(new SocialSim('canvas-2'));
             this.chartCanvas = document.getElementById('chart-canvas');
             this.chartCtx = this.chartCanvas.getContext('2d');
+            this.histCanvas = document.getElementById('histogram-canvas');
+            this.histCtx = this.histCanvas.getContext('2d');
 
             this.setupUI();
             this.resize();
@@ -1068,6 +1173,10 @@
             this.sims.forEach(s => s.resize());
             this.chartCanvas.width = this.chartCanvas.parentElement.clientWidth;
             this.chartCanvas.height = 120;
+            if (this.histCanvas) {
+                this.histCanvas.width = this.histCanvas.parentElement.clientWidth;
+                this.histCanvas.height = 60;
+            }
         },
 
         reset() {
@@ -1091,6 +1200,23 @@
             syncParam('cluster-range', 'clusterFactor', 'val-cluster');
             syncParam('algo-range', 'algoFactor', 'val-algo', true);
             syncParam('critical-range', 'globalCritical', 'val-critical', true);
+
+            document.getElementById('speed-sim-range').oninput = (e) => {
+                const val = parseFloat(e.target.value);
+                SimManager.simSpeed = val;
+                document.getElementById('val-speed-sim').textContent = val.toFixed(1) + "x";
+            };
+
+            syncParam('share-range', 'probShare', 'val-share', true);
+            syncParam('verify-range', 'probVerify', 'val-verify', true);
+            syncParam('fatigue-range', 'fatigueRate', 'val-fatigue', true);
+            syncParam('inf-power-range', 'leaderInfluence', 'val-inf-power', true);
+
+            document.getElementById('hubs-range').oninput = (e) => {
+                this.sims.forEach(s => s.hubCount = parseInt(e.target.value));
+                document.getElementById('val-hubs').textContent = e.target.value;
+                this.reset();
+            };
 
             document.getElementById('comp-var').onchange = () => this.reset();
 
@@ -1125,10 +1251,12 @@
         triggerEvent(type) { this.sims.forEach(s => s.triggerEvent(type)); },
 
         loop() {
+            const steps = Math.ceil(this.simSpeed);
+            const subStep = this.simSpeed < 1 ? Math.floor(1/this.simSpeed) : 1;
+
             this.sims.forEach((s, i) => {
                 if (i === 1 && !this.comparing) return;
 
-                // Si están sincronizados, forzar que los parámetros sean iguales excepto los de la variable de comparación
                 if (i === 1 && this.comparing) {
                     const diffVar = document.getElementById('comp-var').value;
                     if (diffVar === 'none') {
@@ -1139,36 +1267,70 @@
                     }
                 }
 
-                s.update();
+                if (s.running) {
+                    if (this.simSpeed >= 1) {
+                        for(let k=0; k<steps; k++) s.update();
+                    } else {
+                        if (this.sims[0].tick % subStep === 0) s.update();
+                    }
+                }
+
                 s.render();
                 if (s.running && s.tick % 30 === 0) s.updateStats(i === 0);
             });
             requestAnimationFrame(() => this.loop());
         },
 
-        drawHistory(history, popCount) {
+        drawHistory(popCount) {
             const ctx = this.chartCtx, w = this.chartCanvas.width, h = this.chartCanvas.height;
             ctx.clearRect(0, 0, w, h);
-            if (history.length < 2) return;
 
-                // Draw Informed Area
-                ctx.beginPath(); ctx.fillStyle = 'rgba(59, 130, 246, 0.15)'; ctx.moveTo(0, h);
-            history.forEach((d, i) => ctx.lineTo((i / (history.length-1)) * w, h - (d.informed / popCount) * h));
-            ctx.lineTo(w, h); ctx.fill();
+            const h1 = this.sims[0].history;
+            const h2 = this.comparing ? this.sims[1].history : null;
 
-                // Draw Informed Line
-                ctx.beginPath(); ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)'; ctx.lineWidth = 1;
-                history.forEach((d, i) => {
-                    const x = (i / (history.length-1)) * w, y = h - (d.informed / popCount) * h;
-                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-                });
-                ctx.stroke();
-            ctx.beginPath(); ctx.strokeStyle = STATE_COLORS[STATES.ACTIVE]; ctx.lineWidth = 2;
-            history.forEach((d, i) => {
-                const x = (i / (history.length-1)) * w, y = h - (d.active / popCount) * h;
+            // Grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+            for(let i=1; i<4; i++) {
+                ctx.beginPath(); ctx.moveTo(0, h*i/4); ctx.lineTo(w, h*i/4); ctx.stroke();
+            }
+
+            if (h1.length < 2) return;
+
+            // Instancia A (Línea azul sólida)
+            ctx.beginPath(); ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)'; ctx.lineWidth = 3;
+            h1.forEach((d, i) => {
+                const x = (i / (h1.length-1)) * w, y = h - (d.informed / popCount) * h;
                 if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
             });
             ctx.stroke();
+
+            // Instancia B (Línea naranja discontinua)
+            if (h2 && h2.length >= 2) {
+                ctx.beginPath(); ctx.strokeStyle = 'rgba(245, 158, 11, 0.8)'; ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                h2.forEach((d, i) => {
+                    const x = (i / (h2.length-1)) * w, y = h - (d.informed / popCount) * h;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        },
+
+        drawHistogram(sim) {
+            if (!this.histCtx) return;
+            const ctx = this.histCtx, w = this.histCanvas.width, h = this.histCanvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const states = [0,0,0,0,0,0];
+            sim.agents.forEach(a => states[a.state]++);
+
+            const barW = w / 6;
+            states.forEach((count, i) => {
+                const bh = (count / sim.popCount) * h;
+                ctx.fillStyle = STATE_COLORS[i];
+                ctx.fillRect(i * barW, h - bh, barW - 2, bh);
+            });
         },
 
         hexToRgb(hex) {
