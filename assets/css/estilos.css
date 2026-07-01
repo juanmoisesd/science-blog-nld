@@ -260,11 +260,20 @@ nav a:hover {
     padding: 1.5rem;
     z-index: 1000;
     backdrop-filter: blur(12px);
-    width: 220px;
+    width: 240px;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     pointer-events: none;
+}
+
+#freq-analyzer {
+    width: 100%;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    margin-top: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .stat-item {
