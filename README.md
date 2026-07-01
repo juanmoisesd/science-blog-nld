@@ -1,45 +1,34 @@
-# science-blog-nld
+# Science Blog NLD - Versión Neuro-Sync v9.0
 
+Bienvenido al blog de divulgación científica del **Dr. Juan Moisés de la Serna**, una plataforma de vanguardia dedicada al estudio de la neurociencia, la epigenética y los sistemas complejos.
 
-## How to Cite
+## Descripción del Proyecto
 
-If you use this repository in your research, please cite:
+Este repositorio alberga un blog estático de alta fidelidad académica, diseñado exclusivamente en español para la comunidad científica hispanohablante. El corazón del proyecto es el **Motor Neuro-Sync Engine v9.0**, una simulación interactiva que modela procesos cognitivos complejos directamente en el navegador.
 
-> de la Serna, J. M. (2026). *Science Blog Nld*. Universidad Internacional de La Rioja (UNIR).
-> https://github.com/juanmoisesd/science-blog-nld 
+## Características Principales
 
-See `CITATION.cff` for formatted references.
+*   **Motor Neuro-Sync v9.0:** Simulación avanzada de redes neuronales con aprendizaje Hebbiano, avalanchas neurales y dinámica de criticalidad autoorganizada.
+*   **Contenido Doctoral:** Tres tratados científicos exhaustivos que superan las 36,000 palabras:
+    *   *Neuroplasticidad:* El cerebro como escultura dinámica.
+    *   *Epigenética:* La memoria biológica de la experiencia humana.
+    *   *Sistemas Complejos:* La emergencia de la autoconciencia.
+*   **Arquitectura Standalone:** El archivo `index_single.html` contiene toda la experiencia (lógica, diseño y contenido) en un formato 100% autónomo y optimizado para el despliegue en GitHub Pages.
+*   **Audio Sinestésico:** Retroalimentación sonora basada en la Web Audio API que responde a la actividad sináptica en tiempo real.
 
-## Overview
-This repository contains data and resources related to **science blog nld**. It is part of an open science initiative to share research findings and datasets with the global scientific community.
+## Cómo Utilizar
 
-## Research Context
-The project addresses key questions in the field of neuroscience and social sciences, focusing on providing accessible data for further analysis and validation.
+1.  **Acceso Rápido:** Abra el archivo `index_single.html` en cualquier navegador moderno.
+2.  **Interacción:** Use el ratón para "esculpir" la red neuronal o disparar pulsos de información. Use los botones del dashboard para cambiar entre estados mentales (Foco, Creatividad, Calma, Caos).
+3.  **Navegación:** Utilice la barra superior fija para saltar entre el motor interactivo y los diferentes tratados académicos.
 
-## Repository Structure
-- `data/`: Contains the datasets used in this research.
-- `src/`: Source code for data processing and analysis.
-- `results/`: Output files, figures, and metrics.
+## Cómo Citar
 
-## Usage
-To use the resources in this repository, clone the project and ensure you have the necessary dependencies installed. Refer to the specific documentation in each folder for more details.
+Si utiliza este repositorio en su investigación o formación, por favor cite:
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+> de la Serna, J. M. (2026). *Science Blog NLD: Neuro-Sync v9.0*. Universidad Internacional de La Rioja (UNIR).
+> https://github.com/juanmoisesd/science-blog-nld
 
-## Overview
-This repository contains data and resources related to **science blog nld**. It is part of an open science initiative to share research findings and datasets with the global scientific community.
+## Licencia
 
-## Research Context
-The project addresses key questions in the field of neuroscience and social sciences, focusing on providing accessible data for further analysis and validation.
-
-## Repository Structure
-- `data/`: Contains the datasets used in this research.
-- `src/`: Source code for data processing and analysis.
-- `results/`: Output files, figures, and metrics.
-
-## Usage
-To use the resources in this repository, clone the project and ensure you have the necessary dependencies installed. Refer to the specific documentation in each folder for more details.
-
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+Este proyecto está bajo la Licencia MIT. Consulte el archivo `LICENSE` para más detalles.
