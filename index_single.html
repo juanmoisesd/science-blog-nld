@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Science Blog NLD | Cartografía de la Mente</title>
+    <title>Science Blog NLD | Dr. Juan Moisés de la Serna</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
 
@@ -16,6 +16,7 @@
             --text-muted: #94a3b8;
             --glass-border: rgba(255, 255, 255, 0.1);
             --shadow-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            --transition-speed: 0.5s;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,6 +27,20 @@
             font-family: 'Inter', sans-serif;
             line-height: 1.7;
             overflow-x: hidden;
+            transition: background-color var(--transition-speed);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 9999;
         }
 
         h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 700; }
@@ -38,11 +53,12 @@
 
         header h1 {
             font-size: 4.5rem;
-            background: linear-gradient(to right, #f1f5f9, #38bdf8, #818cf8);
+            background: linear-gradient(to right, #f1f5f9, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.02em;
             margin-bottom: 0.5rem;
+            transition: all var(--transition-speed);
         }
 
         header p {
@@ -76,7 +92,7 @@
             transition: all 0.3s ease;
         }
 
-        nav a:hover { color: var(--accent-primary); text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+        nav a:hover { color: var(--accent-primary); text-shadow: 0 0 10px var(--accent-primary); }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
 
@@ -87,12 +103,12 @@
             padding: 3rem;
             backdrop-filter: blur(16px);
             box-shadow: var(--shadow-glow);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color var(--transition-speed);
         }
 
         .hero {
             position: relative;
-            height: 600px;
+            height: 650px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -100,6 +116,7 @@
             margin-bottom: 5rem;
             padding: 0;
             border: none;
+            border-radius: 32px;
         }
 
         #neural-network { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
@@ -113,69 +130,121 @@
             padding: 4rem;
             border-radius: 32px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        .hero h2 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; }
+        .hero h2 { font-size: 3.8rem; line-height: 1.1; margin-bottom: 1.5rem; transition: color var(--transition-speed); }
 
-        .state-selector { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
+        .state-selector { display: flex; justify-content: center; gap: 1.5rem; margin-top: 2.5rem; }
 
         .state-btn {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
             color: white;
-            padding: 0.6rem 1.2rem;
+            padding: 0.8rem 1.5rem;
             border-radius: 100px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
-        .state-btn:hover { background: var(--accent-primary); transform: translateY(-2px); }
+        .state-btn:hover { border-color: var(--accent-primary); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .state-btn.active { background: var(--accent-primary); color: var(--bg-color); border-color: var(--accent-primary); }
+
+        .neural-dashboard {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            z-index: 1000;
+            backdrop-filter: blur(12px);
+            width: 220px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            pointer-events: none;
+        }
+
+        .stat-item { margin-bottom: 1rem; }
+        .stat-label { display: block; color: var(--text-muted); margin-bottom: 0.4rem; }
+        .stat-bar { height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden; }
+        .stat-fill { height: 100%; background: var(--accent-primary); transition: width 0.3s ease, background-color var(--transition-speed); }
+        .stat-value { color: var(--accent-primary); font-weight: 700; }
 
         .article-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 3rem;
         }
 
-        .article-card { display: flex; flex-direction: column; justify-content: space-between; }
-        .article-card:hover { transform: translateY(-10px); border-color: var(--accent-primary); }
-        .article-card h3 { font-size: 1.8rem; margin-bottom: 1rem; }
+        .article-card { display: flex; flex-direction: column; justify-content: space-between; border-left: 4px solid transparent; }
+        .article-card:hover { transform: scale(1.02); border-left-color: var(--accent-primary); }
+        .article-card h3 { font-size: 2rem; margin-bottom: 1.2rem; color: var(--accent-primary); transition: color var(--transition-speed); }
 
         .btn {
             display: inline-block;
             margin-top: 2rem;
-            padding: 1rem 2rem;
+            padding: 1.2rem 2.5rem;
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: var(--bg-color);
             text-decoration: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-weight: 700;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
-        .btn:hover { filter: brightness(1.2); box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+        .btn:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 15px 30px rgba(56, 189, 248, 0.3); }
 
         footer {
-            padding: 4rem 2rem;
+            padding: 6rem 2rem;
             text-align: center;
             border-top: 1px solid var(--glass-border);
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
 
         @media (max-width: 768px) {
-            header h1 { font-size: 2.5rem; }
-            .hero { height: auto; min-height: 500px; }
-            .hero h2 { font-size: 2rem; }
-            nav { gap: 1rem; }
+            header h1 { font-size: 2.8rem; }
+            .hero { height: auto; min-height: 550px; }
+            .hero-content { padding: 2.5rem; }
+            .hero h2 { font-size: 2.5rem; }
+            nav { gap: 1.5rem; }
+            .neural-dashboard { display: none; }
         }
     </style>
 </head>
 <body>
+    <div id="tooltip" class="tooltip"></div>
+
+    <!-- Neural Dashboard v7.0 -->
+    <div class="neural-dashboard">
+        <div class="stat-item">
+            <span class="stat-label">Conectividad</span>
+            <div class="stat-bar"><div id="bar-connectivity" class="stat-fill" style="width: 70%"></div></div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Dopamina</span>
+            <div class="stat-bar"><div id="bar-dopamine" class="stat-fill" style="width: 40%"></div></div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Plasticidad</span>
+            <div class="stat-bar"><div id="bar-plasticity" class="stat-fill" style="width: 85%"></div></div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Estado</span>
+            <span id="display-state" class="stat-value">ENFOQUE</span>
+        </div>
+    </div>
+
     <header>
         <h1>Science Blog NLD</h1>
         <p>Psicología & Neurociencia Cognitiva</p>
@@ -192,310 +261,437 @@
             <canvas id="neural-network"></canvas>
             <div class="hero-content">
                 <h2>Cartografía de la Mente</h2>
-                <p>Explorando la arquitectura de la conciencia a través de la ciencia. Interactúa con la red neural para activar conceptos psicológicos.</p>
+                <p>Navega por la arquitectura invisible de la psique. Una simulación bio-inspirada de la conectividad neural y la dinámica de los estados mentales.</p>
 
                 <div class="state-selector">
-                    <button class="state-btn" onclick="changeState('ENFOQUE')">Enfoque</button>
-                    <button class="state-btn" onclick="changeState('CREATIVIDAD')">Creatividad</button>
-                    <button class="state-btn" onclick="changeState('CALMA')">Calma</button>
+                    <button id="btn-enfoque" class="state-btn active" onclick="changeState('ENFOQUE')">Enfoque</button>
+                    <button id="btn-creatividad" class="state-btn" onclick="changeState('CREATIVIDAD')">Creatividad</button>
+                    <button id="btn-calma" class="state-btn" onclick="changeState('CALMA')">Calma</button>
                 </div>
             </div>
         </section>
 
-        <h2 id="articulos" style="margin-bottom: 2.5rem; text-align: center;">Investigaciones Destacadas</h2>
+        <h2 id="articulos" style="margin-bottom: 3.5rem; text-align: center; font-size: 2.8rem;">Investigaciones de Vanguardia</h2>
         <div class="article-grid">
             <article class="card article-card">
                 <div>
-                    <h3>Neuroplasticidad</h3>
-                    <p>Un análisis exhaustivo sobre cómo las experiencias y el entorno remodelan físicamente nuestra estructura cerebral a lo largo de toda la vida.</p>
+                    <h3>Neuroplasticidad Adaptativa</h3>
+                    <p>Exploramos cómo el conectoma humano se reconfigura en respuesta al aprendizaje, el trauma y la meditación profunda.</p>
                 </div>
-                <a href="articulos/neuroplasticidad.html" class="btn">Explorar Tratado (+10.000 palabras)</a>
+                <a href="articulos/neuroplasticidad.html" class="btn">Estudio Doctoral (+10.000 palabras)</a>
             </article>
 
             <article class="card article-card">
                 <div>
-                    <h3>Epigenética Conductual</h3>
-                    <p>Exploramos los mecanismos moleculares que permiten que nuestras experiencias vivenciales modifiquen la expresión de nuestros genes.</p>
+                    <h3>Arquitectura Epigenética</h3>
+                    <p>Más allá del ADN: El impacto molecular de las experiencias vitales en la expresión génica y su herencia transgeneracional.</p>
                 </div>
-                <a href="articulos/epigenetica.html" class="btn">Explorar Tratado (+10.000 palabras)</a>
+                <a href="articulos/epigenetica.html" class="btn">Tratado Científico (+10.000 palabras)</a>
             </article>
         </div>
 
-        <section id="sobre-mi" class="card" style="margin-top: 5rem;">
-            <h2>Sobre el Dr. Juan Moisés de la Serna</h2>
-            <p>Doctor en Psicología, especialista en Neurociencia Cognitiva y del Comportamiento. Investigador y profesor universitario con una extensa labor de divulgación en medios internacionales.</p>
-            <p style="margin-top: 1rem;">Su trabajo se centra en descifrar los enigmas de la mente humana, combinando el rigor experimental con una visión humanista de la conducta y la biología.</p>
+        <section id="sobre-mi" class="card" style="margin-top: 6rem; position: relative; overflow: hidden;">
+            <div style="position: relative; z-index: 2;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem;">Dr. Juan Moisés de la Serna</h2>
+                <p style="font-size: 1.2rem; color: #cbd5e1; max-width: 900px;">Doctor en Psicología con mención en Neurociencias. Su labor investigadora se centra en la intersección entre la biología molecular y la psicología fenomenológica.</p>
+                <p style="margin-top: 1.5rem; color: var(--text-muted);">Autor de más de 30 tratados científicos, el Dr. de la Serna es una voz referente en la divulgación de la psicología basada en la evidencia.</p>
+            </div>
+            <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: var(--accent-primary); opacity: 0.03; border-radius: 50%; filter: blur(50px);"></div>
         </section>
     </div>
 
     <footer>
-        <p>&copy; 2026 Science Blog NLD - Dr. Juan Moisés de la Serna<br>Divulgación Científica en Psicología</p>
+        <p>&copy; 2026 Science Blog NLD - Dr. Juan Moisés de la Serna<br>Excelencia en Divulgación Científica y Neurociencia</p>
     </footer>
 
     <script>
         /**
-         * Neuro-Sync Engine v5.0 - "The Psychological Synapse"
+         * Neuro-Sync Engine v7.0 - "Deep Mind Emergence"
          */
         const canvas = document.getElementById('neural-network');
         const ctx = canvas.getContext('2d');
 
         let particles = [];
-        let conceptNodes = [];
+        let connections = [];
+        let neurotransmitters = [];
         let pulses = [];
-        let mouse = { x: -1000, y: -1000, radius: 280, active: false };
+        let insightEvents = [];
+        let mouse = { x: -1000, y: -1000, radius: 250, down: false };
 
         const PSYCH_CONCEPTS = [
-            "Memoria", "Percepción", "Emoción", "Conciencia", "Conducta", "Cognición"
+            { label: "Memoria", desc: "Almacenamiento y recuperación de información." },
+            { label: "Percepción", desc: "Organización sensorial del mundo." },
+            { label: "Emoción", desc: "Respuesta psicofisiológica compleja." },
+            { label: "Conciencia", desc: "Conocimiento del ser y del entorno." },
+            { label: "Conducta", desc: "Acción observable del organismo." },
+            { label: "Cognición", desc: "Procesamiento mental superior." }
         ];
 
         const STATES = {
-            ENFOQUE: { name: "Enfoque", primary: '#38bdf8', secondary: '#0ea5e9', pulse: '#fb923c', speed: 1.2 },
-            CREATIVIDAD: { name: "Creatividad", primary: '#c084fc', secondary: '#a855f7', pulse: '#f472b6', speed: 1.8 },
-            CALMA: { name: "Calma", primary: '#2dd4bf', secondary: '#0d9488', pulse: '#94a3b8', speed: 0.6 }
+            ENFOQUE: {
+                name: "Enfoque",
+                primary: '#38bdf8',
+                secondary: '#0ea5e9',
+                pulse: '#fb923c',
+                speed: 1.1,
+                friction: 0.94,
+                repulsion: 0.0003,
+                neuroDensity: 5,
+                clusterPower: 0.02
+            },
+            CREATIVIDAD: {
+                name: "Creatividad",
+                primary: '#c084fc',
+                secondary: '#a855f7',
+                pulse: '#f472b6',
+                speed: 1.6,
+                friction: 0.88,
+                repulsion: 0.0007,
+                neuroDensity: 15,
+                entropy: 0.3
+            },
+            CALMA: {
+                name: "Calma",
+                primary: '#2dd4bf',
+                secondary: '#0d9488',
+                pulse: '#94a3b8',
+                speed: 0.5,
+                friction: 0.98,
+                repulsion: 0.0001,
+                neuroDensity: 4,
+                rhythm: 0.002
+            }
         };
 
         let currentState = STATES.ENFOQUE;
+        let scrollIntensity = 0;
 
         const CONFIG = {
-            particleCount: 140,
+            particleCount: 100,
             connectionDist: 200,
             pulseSpeed: 0.015,
-            bgAlpha: 0.1
+            springStiffness: 0.04,
+            springDamping: 0.85,
+            plasticityRatio: 0.005,
+            decayRatio: 0.001,
+            insightThreshold: 0.85
         };
 
         class Particle {
-            constructor(isConcept = false, label = '') {
+            constructor(isConcept = false, conceptData = null) {
                 this.isConcept = isConcept;
-                this.label = label;
+                this.label = conceptData ? conceptData.label : '';
+                this.desc = conceptData ? conceptData.desc : '';
+                this.isDragging = false;
+                this.activity = 0;
                 this.reset();
             }
 
             reset() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
+                this.baseX = this.x;
+                this.baseY = this.y;
                 this.z = Math.random();
-                this.baseSize = (this.isConcept ? 6 : 2) * (0.5 + this.z * 0.5);
+                this.baseSize = (this.isConcept ? 8 : 2.5) * (0.6 + this.z * 0.4);
                 this.size = this.baseSize;
                 this.vx = (Math.random() - 0.5) * 0.4;
                 this.vy = (Math.random() - 0.5) * 0.4;
-                this.pulseTimer = Math.random() * 500 + 100;
-                this.neighbors = [];
-                this.glow = 0;
+                this.pulseTimer = Math.random() * 400 + 100;
+                this.angle = Math.random() * Math.PI * 2;
             }
 
             update() {
-                const speedMult = currentState.speed;
-                this.x += this.vx * speedMult;
-                this.y += this.vy * speedMult;
-
-                if (this.x < 0) this.x = canvas.width;
-                if (this.x > canvas.width) this.x = 0;
-                if (this.y < 0) this.y = canvas.height;
-                if (this.y > canvas.height) this.y = 0;
-
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-
-                if (dist < mouse.radius) {
-                    const force = (mouse.radius - dist) / mouse.radius;
-                    this.vx += dx * force * 0.0004;
-                    this.vy += dy * force * 0.0004;
-                    this.glow = force;
+                if (this.isDragging) {
+                    this.x += (mouse.x - this.x) * 0.25;
+                    this.y += (mouse.y - this.y) * 0.25;
+                    this.vx = 0; this.vy = 0;
                 } else {
-                    this.glow *= 0.95;
+                    const speedMult = currentState.speed * (1 + scrollIntensity);
+
+                    if (currentState.entropy) {
+                        this.vx += (Math.random() - 0.5) * currentState.entropy;
+                        this.vy += (Math.random() - 0.5) * currentState.entropy;
+                    }
+
+                    if (currentState.clusterPower) {
+                        const dx = canvas.width / 2 - this.x;
+                        const dy = canvas.height / 2 - this.y;
+                        this.vx += dx * currentState.clusterPower * 0.01;
+                        this.vy += dy * currentState.clusterPower * 0.01;
+                    }
+
+                    if (this.isConcept) {
+                        const r = currentState.rhythm ? Math.sin(Date.now() * currentState.rhythm) * 50 : 40;
+                        this.angle += 0.003 * speedMult;
+                        const targetX = this.baseX + Math.cos(this.angle) * r;
+                        const targetY = this.baseY + Math.sin(this.angle) * r;
+                        this.vx += (targetX - this.x) * CONFIG.springStiffness;
+                        this.vy += (targetY - this.y) * CONFIG.springStiffness;
+                    }
+
+                    this.x += this.vx * speedMult;
+                    this.y += this.vy * speedMult;
+
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -0.8;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -0.8;
+
+                    const dx = mouse.x - this.x;
+                    const dy = mouse.y - this.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+
+                    if (dist < mouse.radius) {
+                        const force = (mouse.radius - dist) / mouse.radius;
+                        const dirX = dx / dist;
+                        const dirY = dy / dist;
+
+                        if (mouse.down && this.isConcept) {
+                            this.vx += dirX * force * 0.6;
+                            this.vy += dirY * force * 0.6;
+                        } else {
+                            this.vx -= dirX * force * currentState.repulsion * 600;
+                            this.vy -= dirY * force * currentState.repulsion * 600;
+                        }
+                        this.activity = Math.max(this.activity, force);
+                    }
+                    this.vx *= currentState.friction;
+                    this.vy *= currentState.friction;
                 }
 
-                this.pulseTimer -= speedMult;
+                this.activity *= 0.98;
+                this.pulseTimer -= (currentState.speed + scrollIntensity * 2);
                 if (this.pulseTimer <= 0) {
                     this.emitPulse();
-                    this.pulseTimer = Math.random() * 400 + 200;
+                    this.pulseTimer = (Math.random() * 300 + 150) / (1 + this.activity);
                 }
             }
 
             draw() {
-                const opacity = 0.3 + this.z * 0.7;
+                const opacity = 0.4 + this.z * 0.6;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size + (this.glow * 4), 0, Math.PI * 2);
-
-                ctx.fillStyle = this.isConcept ? currentState.primary : '#94a3b8';
+                const currentSize = this.baseSize + (this.activity * 10);
+                ctx.arc(this.x, this.y, currentSize, 0, Math.PI * 2);
+                ctx.fillStyle = this.isConcept ? currentState.primary : '#cbd5e1';
                 ctx.globalAlpha = opacity;
-
-                if (this.isConcept || this.z > 0.8 || this.glow > 0.5) {
-                    ctx.shadowBlur = (this.isConcept ? 20 : 10) * (opacity + this.glow);
+                if (this.isConcept || this.activity > 0.5) {
+                    ctx.shadowBlur = (this.isConcept ? 30 : 15) * (opacity + this.activity);
                     ctx.shadowColor = currentState.primary;
                 }
-
                 ctx.fill();
                 ctx.globalAlpha = 1;
                 ctx.shadowBlur = 0;
 
                 if (this.isConcept) {
-                    ctx.font = `bold ${12 + this.z * 4}px Inter, sans-serif`;
+                    ctx.font = `bold 14px 'Inter', sans-serif`;
                     ctx.fillStyle = 'white';
                     ctx.textAlign = 'center';
-                    ctx.fillText(this.label, this.x, this.y - 15);
-
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
-                    ctx.strokeStyle = currentState.primary;
-                    ctx.setLineDash([2, 4]);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
+                    ctx.fillText(this.label, this.x, this.y - 25);
+                    if (this.activity > 0.4 || this.isDragging) {
+                        ctx.font = `italic 11px Inter, sans-serif`;
+                        ctx.fillStyle = `${currentState.primary}cc`;
+                        ctx.fillText(this.desc, this.x, this.y + 25);
+                    }
                 }
             }
 
             emitPulse() {
-                if (this.neighbors.length > 0) {
-                    const num = this.isConcept ? 3 : 1;
-                    for(let i=0; i<num; i++) {
-                        const target = this.neighbors[Math.floor(Math.random() * this.neighbors.length)];
-                        pulses.push(new Pulse(this, target));
+                const activeConnections = connections.filter(c => c.p1 === this || c.p2 === this);
+                if (activeConnections.length > 0) {
+                    const count = this.isConcept ? 2 : 1;
+                    for(let i=0; i<count; i++) {
+                        const conn = activeConnections[Math.floor(Math.random() * activeConnections.length)];
+                        const target = conn.p1 === this ? conn.p2 : conn.p1;
+                        pulses.push(new Pulse(this, target, conn));
+                        conn.strengthen();
                     }
                 }
             }
         }
 
-        class Pulse {
-            constructor(start, end) {
-                this.start = start;
-                this.end = end;
-                this.progress = 0;
-                this.speed = CONFIG.pulseSpeed * (0.8 + Math.random() * 0.4);
-                this.color = currentState.pulse;
+        class Connection {
+            constructor(p1, p2) {
+                this.p1 = p1; this.p2 = p2;
+                this.strength = 0.1 + Math.random() * 0.2;
+                this.isImportant = p1.isConcept || p2.isConcept;
             }
-
             update() {
-                this.progress += this.speed * currentState.speed;
-                return this.progress < 1;
+                this.strength -= CONFIG.decayRatio;
+                if (this.isImportant) this.strength += CONFIG.decayRatio * 0.5;
+                const dist = Math.sqrt(Math.pow(this.p1.x-this.p2.x, 2) + Math.pow(this.p1.y-this.p2.y, 2));
+                if (dist > CONFIG.connectionDist * 1.5) this.strength -= 0.01;
+                this.strength = Math.max(0, Math.min(1, this.strength));
+                return this.strength > 0;
             }
-
+            strengthen() {
+                this.strength += CONFIG.plasticityRatio * 10;
+                if (this.strength > CONFIG.insightThreshold && Math.random() > 0.98) triggerInsight(this.p1.x, this.p1.y);
+            }
             draw() {
-                const x = this.start.x + (this.end.x - this.start.x) * this.progress;
-                const y = this.start.y + (this.end.y - this.start.y) * this.progress;
-
+                if (this.strength <= 0.05) return;
                 ctx.beginPath();
-                ctx.arc(x, y, 2, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = this.color;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-
-                ctx.beginPath();
-                ctx.moveTo(this.start.x, this.start.y);
-                ctx.lineTo(x, y);
-                ctx.strokeStyle = this.color;
-                ctx.globalAlpha = 0.2 * (1 - this.progress);
+                ctx.moveTo(this.p1.x, this.p1.y);
+                const cp1x = this.p1.x + (this.p2.x - this.p1.x) * 0.5;
+                const cp1y = this.p1.y;
+                const cp2x = this.p1.x + (this.p2.x - this.p1.x) * 0.5;
+                const cp2y = this.p2.y;
+                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, this.p2.x, this.p2.y);
+                ctx.strokeStyle = this.isImportant ? currentState.primary : '#475569';
+                ctx.globalAlpha = this.strength * 0.3 * this.p1.z * this.p2.z;
+                ctx.lineWidth = this.isImportant ? 2 * this.strength : 0.5 * this.strength;
                 ctx.stroke();
                 ctx.globalAlpha = 1;
             }
+        }
+
+        class Pulse {
+            constructor(start, end, connection) {
+                this.start = start; this.end = end; this.connection = connection;
+                this.progress = 0;
+                this.speed = CONFIG.pulseSpeed * (0.7 + Math.random() * 0.6);
+            }
+            update() {
+                this.progress += this.speed * (currentState.speed + scrollIntensity);
+                if (this.progress >= 1) { this.end.activity += 0.15; return false; }
+                return true;
+            }
+            draw() {
+                const t = this.progress;
+                const cp1x = this.start.x + (this.end.x - this.start.x) * 0.5;
+                const cp1y = this.start.y;
+                const cp2x = this.start.x + (this.end.x - this.start.x) * 0.5;
+                const cp2y = this.end.y;
+                const x = Math.pow(1-t, 3) * this.start.x + 3 * Math.pow(1-t, 2) * t * cp1x + 3 * (1-t) * Math.pow(t, 2) * cp2x + Math.pow(t, 3) * this.end.x;
+                const y = Math.pow(1-t, 3) * this.start.y + 3 * Math.pow(1-t, 2) * t * cp1y + 3 * (1-t) * Math.pow(t, 2) * cp2y + Math.pow(t, 3) * this.end.y;
+                ctx.beginPath();
+                ctx.arc(x, y, 3 * this.connection.strength, 0, Math.PI * 2);
+                ctx.fillStyle = currentState.pulse;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = currentState.pulse;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class Neurotransmitter {
+            constructor(type) {
+                this.type = type; this.history = []; this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * (this.type === 'dopamine' ? 2.5 : 1.0);
+                this.vy = (Math.random() - 0.5) * (this.type === 'dopamine' ? 2.5 : 1.0);
+                this.size = this.type === 'dopamine' ? 2 : 3.5;
+                this.color = this.type === 'dopamine' ? '#fde047' : '#38bdf8';
+                this.life = 1.0; this.history = [];
+            }
+            update() {
+                this.history.push({x: this.x, y: this.y});
+                if (this.history.length > 8) this.history.shift();
+                this.x += this.vx * (1 + scrollIntensity);
+                this.y += this.vy * (1 + scrollIntensity);
+                this.life -= 0.003;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                particles.forEach(p => {
+                    const distSq = Math.pow(p.x-this.x, 2) + Math.pow(p.y-this.y, 2);
+                    if (distSq < 1600) {
+                        const force = (40 - Math.sqrt(distSq)) / 40;
+                        if (this.type === 'dopamine') { p.activity += 0.02 * force; p.vx += (this.x - p.x) * 0.001; }
+                        else { p.vx *= (1 - 0.1 * force); p.activity *= (1 - 0.05 * force); }
+                    }
+                });
+                return this.life > 0;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function triggerInsight(x, y) {
+            insightEvents.push({ x, y, radius: 0, life: 1.0 });
+        }
+
+        function updateInsight() {
+            insightEvents = insightEvents.filter(e => {
+                e.radius += 10; e.life -= 0.02;
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${e.life * 0.5})`;
+                ctx.stroke();
+                return e.life > 0;
+            });
         }
 
         function init() {
             const parent = canvas.parentElement;
             canvas.width = parent.offsetWidth;
             canvas.height = parent.offsetHeight;
-            particles = [];
-            conceptNodes = [];
-
-            PSYCH_CONCEPTS.forEach(label => {
-                const p = new Particle(true, label);
-                particles.push(p);
-                conceptNodes.push(p);
-            });
-
-            for(let i=0; i<CONFIG.particleCount; i++) {
-                particles.push(new Particle());
+            particles = []; connections = []; neurotransmitters = [];
+            PSYCH_CONCEPTS.forEach(data => particles.push(new Particle(true, data)));
+            for(let i=0; i<CONFIG.particleCount; i++) particles.push(new Particle());
+            for(let i=0; i<particles.length; i++) {
+                for(let j=i+1; j<particles.length; j++) {
+                    const dist = Math.sqrt(Math.pow(particles[i].x-particles[j].x, 2) + Math.pow(particles[i].y-particles[j].y, 2));
+                    if (dist < CONFIG.connectionDist * 0.8 && Math.random() > 0.5) connections.push(new Connection(particles[i], particles[j]));
+                }
             }
         }
 
-        function connect() {
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].neighbors = [];
-                for (let j = i + 1; j < particles.length; j++) {
-                    const p1 = particles[i];
-                    const p2 = particles[j];
-                    const dx = p1.x - p2.x;
-                    const dy = p1.y - p2.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-
-                    if (dist < CONFIG.connectionDist) {
-                        p1.neighbors.push(p2);
-                        const alpha = (1 - dist / CONFIG.connectionDist) * 0.12 * p1.z * p2.z;
-                        ctx.strokeStyle = p1.isConcept || p2.isConcept ? currentState.primary : '#475569';
-                        ctx.globalAlpha = alpha;
-                        ctx.lineWidth = (p1.isConcept || p2.isConcept) ? 1 : 0.4;
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    }
-                }
-            }
-            ctx.globalAlpha = 1;
+        function updateDashboard() {
+            document.getElementById('bar-connectivity').style.width = `${Math.min(100, (connections.length/(particles.length*2.5))*100)}%`;
+            document.getElementById('bar-dopamine').style.width = `${Math.min(100, (neurotransmitters.filter(n=>n.type==='dopamine').length/20)*100)}%`;
+            document.getElementById('bar-plasticity').style.width = `${Math.min(100, CONFIG.plasticityRatio*10000)}%`;
+            document.getElementById('display-state').innerText = currentState.name.toUpperCase();
         }
 
         function animate() {
             ctx.fillStyle = '#020617';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            const time = Date.now() * 0.001;
-            const grad = ctx.createRadialGradient(
-                canvas.width/2 + Math.sin(time*0.5)*100,
-                canvas.height/2 + Math.cos(time*0.3)*100,
-                0,
-                canvas.width/2,
-                canvas.height/2,
-                canvas.width
-            );
-            grad.addColorStop(0, `${currentState.secondary}11`);
-            grad.addColorStop(1, '#020617');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            connect();
-
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-
-            pulses = pulses.filter(p => {
-                const active = p.update();
-                if (active) p.draw();
-                return active;
-            });
-
+            if (Date.now() % 10 === 0) updateDashboard();
+            connections = connections.filter(c => c.update());
+            if (connections.length < particles.length * 2.5) {
+                const p1 = particles[Math.floor(Math.random()*particles.length)], p2 = particles[Math.floor(Math.random()*particles.length)];
+                if (p1!==p2 && Math.sqrt(Math.pow(p1.x-p2.x,2)+Math.pow(p1.y-p2.y,2)) < CONFIG.connectionDist) connections.push(new Connection(p1, p2));
+            }
+            if (neurotransmitters.length < currentState.neuroDensity + (scrollIntensity*20)) neurotransmitters.push(new Neurotransmitter(Math.random()>0.4?'dopamine':'serotonin'));
+            connections.forEach(c => c.draw());
+            neurotransmitters = neurotransmitters.filter(n => { if (n.update()) { n.draw(); return true; } return false; });
+            particles.forEach(p => { p.update(); p.draw(); });
+            pulses = pulses.filter(p => { if (p.update()) { p.draw(); return true; } return false; });
+            updateInsight();
             requestAnimationFrame(animate);
         }
 
         window.changeState = (stateKey) => {
-            if (STATES[stateKey]) {
-                currentState = STATES[stateKey];
-                conceptNodes.forEach(c => c.emitPulse());
-            }
+            currentState = STATES[stateKey];
+            document.querySelectorAll('.state-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${stateKey.toLowerCase()}`).classList.add('active');
+            document.documentElement.style.setProperty('--accent-primary', currentState.primary);
+            document.documentElement.style.setProperty('--accent-secondary', currentState.secondary);
+            particles.forEach(p => { if (p.isConcept) { p.activity = 1.0; for(let i=0; i<5; i++) setTimeout(()=>p.emitPulse(), i*100); }});
         };
 
-        window.addEventListener('mousemove', (e) => {
+        window.addEventListener('scroll', () => {
+            const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+            scrollIntensity = scrollPercent * 3;
+            CONFIG.plasticityRatio = 0.005 + (scrollPercent * 0.01);
+        });
+
+        window.addEventListener('mousedown', (e) => {
+            mouse.down = true;
             const rect = canvas.getBoundingClientRect();
-            mouse.x = e.clientX - rect.left;
-            mouse.y = e.clientY - rect.top;
+            particles.forEach(p => { if (p.isConcept && Math.sqrt(Math.pow(p.x-(e.clientX-rect.left),2)+Math.pow(p.y-(e.clientY-rect.top),2))<50) p.isDragging = true; });
         });
-
-        window.addEventListener('mousedown', () => {
-            conceptNodes.forEach(c => {
-                const dx = mouse.x - c.x;
-                const dy = mouse.y - c.y;
-                if(Math.sqrt(dx*dx + dy*dy) < 100) {
-                    for(let i=0; i<10; i++) c.emitPulse();
-                }
-            });
-        });
-
+        window.addEventListener('mouseup', () => { mouse.down = false; particles.forEach(p => p.isDragging = false); });
+        window.addEventListener('mousemove', (e) => { const rect = canvas.getBoundingClientRect(); mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top; });
         window.addEventListener('resize', init);
-        init();
-        animate();
+        init(); animate();
     </script>
 </body>
 </html>
