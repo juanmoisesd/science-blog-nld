@@ -1,6 +1,6 @@
 /**
- * Neuro-Sync Engine v8.0 - "Synesthetic Connectome"
- * Arquitectura de nivel doctoral con plasticidad sináptica, fractales procedimentales y audio generativo.
+ * Neuro-Sync Engine v9.0 - "Mente Emergente"
+ * Arquitectura de nivel doctoral con Aprendizaje Hebbiano, avalanchas neurales y post-procesamiento cinemático.
  */
 
 const canvas = document.getElementById('neural-network');
@@ -71,7 +71,8 @@ const CONFIG = {
     springStiffness: 0.04,
     springDamping: 0.85,
     plasticityRatio: 0.005, // Crecimiento sináptico
-    decayRatio: 0.001,     // Poda sináptica
+    decayRatio: 0.0015,     // Poda sináptica aumentada para v9
+    hebbianStrength: 0.02,  // Factor de refuerzo Hebbiano
     insightThreshold: 0.85
 };
 
@@ -358,8 +359,12 @@ class Connection {
     }
 
     update() {
+        // Aprendizaje Hebbiano: Refuerzo por co-activación
+        const coActivation = this.p1.activity * this.p2.activity;
+        this.strength += coActivation * CONFIG.hebbianStrength;
+
         this.strength -= CONFIG.decayRatio;
-        if (this.isImportant) this.strength += CONFIG.decayRatio * 0.5; // Los conceptos son más estables
+        if (this.isImportant) this.strength += CONFIG.decayRatio * 0.7; // Los conceptos son más estables
 
         const dx = this.p1.x - this.p2.x;
         const dy = this.p1.y - this.p2.y;
@@ -414,7 +419,17 @@ class Pulse {
     update() {
         this.progress += this.speed * (currentState.speed + scrollIntensity);
         if (this.progress >= 1) {
-            this.end.activity += 0.15;
+            this.end.activity += 0.2; // Aumentado impacto
+
+            // Lógica de Avalancha Neural (v9)
+            // Si el nodo destino tiene alta actividad, dispara pulsos secundarios
+            if (this.end.activity > 0.4 && !this.end.isConcept && pulses.length < 100) {
+                const avalancheProb = 0.3 * this.end.activity;
+                if (Math.random() < avalancheProb) {
+                    this.end.emitPulse();
+                }
+            }
+
             return false;
         }
         return true;
@@ -630,12 +645,15 @@ function updateDashboard() {
     const dopamine = (neurotransmitters.filter(n => n.type === 'dopamine').length / 20) * 100;
     const plasticity = CONFIG.plasticityRatio * 10000;
     const sync = (pulses.length / 50) * 100;
+    const entropy = currentState.entropy ? currentState.entropy * 200 : 10;
 
     document.getElementById('bar-connectivity').style.width = `${Math.min(100, connectivity)}%`;
     document.getElementById('bar-dopamine').style.width = `${Math.min(100, dopamine)}%`;
     document.getElementById('bar-plasticity').style.width = `${Math.min(100, plasticity)}%`;
     const syncEl = document.getElementById('bar-sync');
     if (syncEl) syncEl.style.width = `${Math.min(100, sync)}%`;
+    const entropyEl = document.getElementById('bar-entropy');
+    if (entropyEl) entropyEl.style.width = `${Math.min(100, entropy)}%`;
     document.getElementById('display-state').innerText = currentState.name.toUpperCase();
 
     // Dibujar Osciloscopio

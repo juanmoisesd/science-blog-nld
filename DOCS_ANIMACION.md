@@ -1,48 +1,43 @@
-# Documentación del Motor "Neuro-Sync Engine v8.0: Synesthetic Connectome"
+# Documentación del Motor "Neuro-Sync Engine v9.0: Mente Emergente"
 
-Este documento detalla la arquitectura de vanguardia del motor de animación v8.0, diseñado para ofrecer una experiencia inmersiva de neurociencia interactiva y sensorial.
+Este documento detalla la arquitectura de vanguardia del motor de animación v9.0, diseñado para ofrecer una experiencia inmersiva de neurociencia interactiva, sensorial y algorítmicamente profunda.
 
-## Arquitectura Biológica y Sensorial (v8.0)
+## Arquitectura Biológica y Sensorial (v9.0)
 
-### 1. Geometría Neuronal Procedural (Fractal)
-Se abandona la representación de nodos simples por una morfología de soma y dendritas:
-- **Ramificación Dendrítica:** Uso de sistemas-L simplificados para generar arborizaciones que buscan activamente conexiones con neuronas vecinas.
-- **Morfología Dinámica:** El tamaño del soma y la complejidad de las dendritas varían según la "edad" (tiempo de vida) y actividad de la neurona.
+### 1. Aprendizaje Hebbiano (Hebbian Learning)
+Se implementa un algoritmo dinámico basado en la máxima de Donald Hebb: *"Neurons that fire together, wire together"*.
+- **Refuerzo por Co-activación:** Las conexiones entre nodos que se activan en una ventana temporal cercana incrementan su atributo `strength`.
+- **Decaimiento Sináptico:** Las conexiones infrautilizadas experimentan un decaimiento gradual, optimizando la topología de la red para representar los "caminos de pensamiento" más frecuentes del usuario.
 
-### 2. Audio Sinestésico (Brainwave Synthesis)
-Integración de la Web Audio API para una retroalimentación auditiva biológica:
-- **Binaural Beats:** Generación de frecuencias base (Alpha para Calma, Beta para Enfoque, Gamma para Creatividad).
-- **Disparos Sinápticos:** Cada pulso genera un evento sonoro (oscilador con envolvente exponencial) cuya frecuencia depende de la posición espacial de la neurona.
+### 2. Avalanchas Neurales y Emergencia
+El motor simula la dinámica crítica de las redes biológicas:
+- **Puntos de Ignición:** Cuando un nodo alcanza un umbral de activación crítico, dispara una cascada recursiva hacia sus vecinos (visibles como partículas de luz que viajan por las conexiones).
+- **Propagación No Lineal:** Estas "avalanchas" crean patrones visuales complejos que imitan los momentos de *Insight* o epifanías cognitivas.
 
-### 3. Plasticidad Sináptica (Crecimiento y Poda)
-A diferencia de las versiones anteriores, las conexiones (axones) no son estáticas:
-- **Crecimiento (Growth):** Las sinapsis se fortalecen y se vuelven más visibles con el uso (frecuencia de pulsos).
-- **Poda (Pruning):** Las conexiones inactivas pierden opacidad y eventualmente desaparecen, simulando el proceso biológico de optimización neural.
-- **Curvatura Orgánica:** Uso de curvas de Bezier de tercer grado para representar la morfología neuronal.
+### 3. Audio Sinestésico y Visualizador de Frecuencia
+Evolución de la Web Audio API para una retroalimentación auditiva biológica:
+- **Osciloscopio en Tiempo Real:** Visualización de la forma de onda del sonido generado, actuando como un electroencefalograma (EEG) en el Dashboard.
+- **Síntesis Espacial:** El tono (pitch) de los pulsos varía según la posición vertical del puntero, y el paneo estéreo responde a la posición horizontal.
 
-### 4. Dinámica de Neurotransmisores
-Se implementa un sistema secundario de micro-partículas que representan mensajeros químicos:
-- **Dopamina (Amarillo/Brillante):** Partículas rápidas que aumentan la velocidad de los nodos y la frecuencia de pulsos al contacto.
-- **Serotonina (Azul/Calma):** Partículas lentas que estabilizan los nodos y reducen la turbulencia física.
+### 4. Dashboard de Métricas de Estado
+Interfaz de control que permite monitorear el estado interno de la simulación:
+- **Conectividad:** Porcentaje de saturación de la red.
+- **Dopamina:** Representa la densidad de partículas libres y la velocidad de los procesos.
+- **Plasticidad:** Mide el ritmo al que la red puede reconfigurarse ante nuevos estímulos.
 
-### 5. Avalanchas Neurales (Emergencia)
-El motor detecta "puntos de ignición". Cuando un nodo recibe múltiples impulsos simultáneos, se dispara una *avalancha*: una onda de luz expansiva que recorre la red, simulando un momento de "Insight" o comprensión profunda.
+## Interactividad y Control de Estado
 
-## Interactividad de Capa Dual
+### 1. Estados Mentales Predefinidos
+El usuario puede cambiar la "personalidad" de la red mediante los botones del dashboard:
+- **FOCO:** Alta velocidad, baja entropía, conexiones directas.
+- **CREATIVIDAD:** Alta densidad de neurotransmisores, pulsos frecuentes, colores vibrantes.
+- **CALMA:** Movimiento fluido, tonos verdes, baja actividad.
+- **CAOS CONTROLADO:** Criticalidad máxima, avalanchas constantes, alta entropía.
 
-### 1. Sincronización de Scroll (Scroll-Sync)
-La intensidad de la simulación está ligada a la posición de lectura. Al leer los tratados científicos, la densidad de neurotransmisores y la velocidad de los pulsos aumentan, reflejando el "procesamiento cognitivo" del usuario.
+### 2. Manipulación Directa
+- **Arrastre de Conceptos:** Los nodos etiquetados (Resiliencia, Epigenética, etc.) pueden ser arrastrados para reconfigurar la topología local de la red.
+- **Disparo de Insights:** Un clic en el fondo oscuro genera un pulso de información que se propaga por toda la red.
 
-### 2. Física de Resortes (Spring-Physics)
-Los nodos principales son objetos físicos con masa y tensión. El usuario puede arrastrar conceptos como "Conciencia" o "Memoria", sintiendo la resistencia de la red conectada.
+## Implementación Técnica
 
-## Especificaciones Estéticas y Ópticas
-
-- **Paralaje 3D:** Simulación de profundidad mediante capas con diferentes velocidades y desenfoque (Depth of Field).
-- **HDR Bloom:** Los pulsos de "Insight" emiten luz con valores de luminancia expandidos, creando un efecto de incandescencia realista.
-- **Textura:** Integración de ruido granulado (grain) mediante CSS para evocar la sensación de un laboratorio de investigación clásico (Dark Academic).
-- **Variables Globales:** Sincronización total mediante variables CSS (`--accent-primary`, `--synapse-strength`) que permiten transiciones suaves entre estados mentales.
-
-## Mantenimiento
-
-Para ajustar la "inteligencia" de la red, modificar los coeficientes de `PLASTICITY_RATIO` e `insightThreshold` en `assets/js/animacion.js`. Para la síntesis de audio, consultar la clase `NeuroAudio`.
+El motor está escrito en JavaScript puro utilizando el API de Canvas 2D para máxima eficiencia de renderizado a 60 FPS, permitiendo manejar cientos de partículas y conexiones simultáneamente sin degradación del rendimiento. Todo el código está integrado en el bloque `<script>` final de `index_single.html`.
