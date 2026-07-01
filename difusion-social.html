@@ -6,32 +6,33 @@
     <title>SOCIODYNAMICS: Simulación Avanzada de Difusión Social</title>
     <style>
         :root {
-            --bg: #05070a;
-            --panel: rgba(13, 17, 23, 0.75);
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.5);
-            --text: #f8fafc;
-            --text-dim: #94a3b8;
-            --border: rgba(255, 255, 255, 0.1);
+            --bg: #020408;
+            --panel: rgba(10, 14, 20, 0.85);
+            --accent: #00f2ff;
+            --accent-glow: rgba(0, 242, 255, 0.4);
+            --text: #e2e8f0;
+            --text-dim: #64748b;
+            --border: rgba(0, 242, 255, 0.15);
 
-            /* Estados */
-            --s-uninformed: #475569;
-            --s-received: #f59e0b;
-            --s-active: #ef4444;
-            --s-inactive: #3b82f6;
-            --s-verifier: #10b981;
-            --s-debunker: #8b5cf6;
+            /* Estados - Paleta Científica */
+            --s-uninformed: #1e293b;
+            --s-received: #ffcc00;
+            --s-active: #ff3333;
+            --s-inactive: #0088ff;
+            --s-verifier: #00ffaa;
+            --s-debunker: #bb00ff;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             height: 100vh;
             overflow: hidden;
             display: flex;
+            user-select: none;
         }
 
         /* --- UI LAYOUT --- */
@@ -42,6 +43,59 @@
             cursor: crosshair;
             display: flex;
             background: #000;
+            overflow: hidden;
+        }
+        #viewport::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.6;
+        }
+
+        .crt-flicker {
+            animation: flicker 0.15s infinite;
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            z-index: 11;
+            background: rgba(18, 16, 16, 0.02);
+            display: none;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.1; }
+            50% { opacity: 0.2; }
+            100% { opacity: 0.1; }
+        }
+
+        .screen-shake {
+            animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        @keyframes glitch {
+            0% { clip-path: inset(40% 0 61% 0); transform: translate(-5px, 0); }
+            20% { clip-path: inset(92% 0 1% 0); transform: translate(5px, 0); }
+            40% { clip-path: inset(43% 0 1% 0); transform: translate(-5px, 0); }
+            60% { clip-path: inset(25% 0 58% 0); transform: translate(5px, 0); }
+            80% { clip-path: inset(54% 0 7% 0); transform: translate(-5px, 0); }
+            100% { clip-path: inset(58% 0 43% 0); transform: translate(5px, 0); }
+        }
+        .glitch-fx::before {
+            content: ""; position: absolute; inset: 0; background: inherit;
+            animation: glitch 0.4s infinite; opacity: 0.3; pointer-events: none;
+            z-index: 12; border-top: 1px solid var(--accent);
         }
 
         .sim-container {
@@ -59,25 +113,35 @@
         }
 
         #sidebar {
-            width: 400px;
+            width: 440px;
             height: 100%;
             background: var(--panel);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(40px);
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             z-index: 100;
             overflow-y: auto;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            box-shadow: -30px 0 80px rgba(0,0,0,0.9);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 1px solid var(--accent);
         }
 
         /* --- COMPONENTS --- */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(0, 242, 255, 0.03);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 4px;
             padding: 16px;
             margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 2px; height: 100%;
+            background: var(--accent);
         }
 
         .header {
@@ -86,12 +150,14 @@
         }
 
         .header h1 {
-            font-weight: 800;
-            font-size: 1.5rem;
-            letter-spacing: -0.02em;
-            background: linear-gradient(to right, #3b82f6, #60a5fa);
+            font-weight: 900;
+            font-size: 1.8rem;
+            letter-spacing: 0.1em;
+            background: linear-gradient(to right, var(--accent), #fff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px var(--accent-glow);
         }
 
         .section { padding: 20px; }
@@ -262,19 +328,20 @@
 <body>
 
 <div id="viewport">
+    <div class="crt-flicker" id="flicker"></div>
     <div id="container-1" class="sim-container">
         <canvas id="canvas-1" class="sim-canvas"></canvas>
         <div class="hud" id="hud-1" style="position: absolute; top: 20px; left: 20px; pointer-events: none;">
-            <h1 style="font-size: 1.2rem; font-weight: 800; color: white;">SOCIODYNAMICS 2.0</h1>
-            <p style="color: var(--text-dim); font-size: 0.8rem;">Instancia A</p>
+            <h1 style="font-size: 1.2rem; font-weight: 900; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow);">SOCIODYNAMICS: NEXUS</h1>
+            <p style="color: var(--text-dim); font-size: 0.75rem; letter-spacing: 2px;">CONFIGURACIÓN ALPHA (CONTROL)</p>
         </div>
     </div>
 
-    <div id="container-2" class="sim-container" style="display: none;">
+    <div id="container-2" class="sim-container" style="display: none; border-left: 1px solid var(--accent);">
         <canvas id="canvas-2" class="sim-canvas"></canvas>
         <div class="hud" id="hud-2" style="position: absolute; top: 20px; left: 20px; pointer-events: none;">
-            <h1 style="font-size: 1.2rem; font-weight: 800; color: white;">SOCIODYNAMICS 2.0</h1>
-            <p style="color: var(--text-dim); font-size: 0.8rem;">Instancia B (Comparativa)</p>
+            <h1 style="font-size: 1.2rem; font-weight: 900; color: var(--s-received); text-shadow: 0 0 10px rgba(255,204,0,0.3);">SOCIODYNAMICS: NEXUS</h1>
+            <p style="color: var(--text-dim); font-size: 0.75rem; letter-spacing: 2px;">CONFIGURACIÓN BETA (EXPERIMENTAL)</p>
         </div>
     </div>
 
@@ -297,10 +364,17 @@
     </div>
 
     <div class="section">
+        <div class="section-title">Laboratorio de Casos de Estudio</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+            <button class="case-btn" onclick="SimManager.loadScenario('eco')">Cámara Eco</button>
+            <button class="case-btn" onclick="SimManager.loadScenario('viral')">Viralidad</button>
+            <button class="case-btn" onclick="SimManager.loadScenario('resistance')">Resistencia</button>
+            <button class="case-btn" onclick="SimManager.loadScenario('innovation')">Adopción</button>
+        </div>
         <button class="primary" id="btn-play">INICIAR SIMULACIÓN</button>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
             <button id="btn-reset">REINICIAR</button>
-            <button id="btn-compare">COMPARAR</button>
+            <button id="btn-compare">MODO DUAL</button>
         </div>
     </div>
 
@@ -334,16 +408,19 @@
                 <option value="fake">Fake News (Desinformación)</option>
                 <option value="innovacion">Innovación Tecnológica</option>
                 <option value="campaña">Campaña Sanitaria / Institucional</option>
-                <option value="whatsapp">Cadena de WhatsApp</option>
+                <option value="whatsapp">Cadena de WhatsApp (Clustering)</option>
+                <option value="red_social">Red Social (Algoritmos, Hubs)</option>
                 <option value="television">Televisión Tradicional (Top-Down)</option>
                 <option value="meme">Meme (Viralidad Explosiva)</option>
+                <option value="personalizado">Modo Personalizado (Libre)</option>
             </select>
         </div>
 
         <div class="control-group">
             <label class="control-label">Modo Visual</label>
             <select id="vis-mode">
-                <option value="network">Red Estándar</option>
+                <option value="network">Física de Partículas</option>
+                <option value="topology">Vista de Red (Clusters)</option>
                 <option value="heatmap">Mapa de Calor</option>
                 <option value="tree">Árbol de Transmisión</option>
             </select>
@@ -401,18 +478,20 @@
                 <button class="event-btn" onclick="SimManager.triggerEvent('institucional')">Campaña</button>
                 <button class="event-btn" onclick="SimManager.triggerEvent('medios')">Medios</button>
                 <button class="event-btn" onclick="SimManager.triggerEvent('censura')">Censura</button>
+                <button class="event-btn" onclick="SimManager.triggerEvent('bot_ia')" style="border-color: #ff3333; color: #ff3333;">Bot de IA</button>
+                <button class="event-btn" onclick="SimManager.triggerEvent('inoculacion')" style="border-color: #00ffaa; color: #00ffaa;">Inocular</button>
         </div>
     </div>
 
-        <div id="comparison-selector" class="section" style="display: none; background: rgba(59, 130, 246, 0.1);">
+        <div id="comparison-selector" class="section" style="display: none; background: rgba(0, 242, 255, 0.05); border-top: 1px solid var(--accent);">
             <div class="section-title">Variable de Comparación</div>
             <select id="comp-var">
-                <option value="none">Sin diferencia (Sincronizado)</option>
-                <option value="critical">Población Crítica vs Crédula</option>
-                <option value="connectivity">Red Conectada vs Dispersa</option>
-                <option value="algo">Burbuja Informativa vs Red Abierta</option>
-                <option value="verifiers">Muchos Verificadores vs Ninguno</option>
-                <option value="hubs">Con Líderes vs Sin Líderes</option>
+                <option value="none">Sincronizado (Control)</option>
+                <option value="critical">Resiliencia Cognitiva (Alta vs Baja)</option>
+                <option value="connectivity">Arquitectura de Red (Densa vs Dispersa)</option>
+                <option value="algo">Cámaras de Eco (Filtro vs Abierto)</option>
+                <option value="verifiers">Inmunidad Social (Verificadores)</option>
+                <option value="hubs">Impacto de Líderes (Con vs Sin)</option>
             </select>
         </div>
 
@@ -433,15 +512,23 @@
             </div>
             <div class="stat-box">
                 <span class="stat-val" id="stat-verifiers">0</span>
-                <span class="stat-lbl">Verificando</span>
+                <span class="stat-lbl">Verificadores</span>
             </div>
             <div class="stat-box">
                 <span class="stat-val" id="stat-debunkers">0</span>
-                <span class="stat-lbl">Desmintiendo</span>
+                <span class="stat-lbl">Desmentidos</span>
             </div>
             <div class="stat-box">
-                <span class="stat-val" id="stat-speed">0.0</span>
-                <span class="stat-lbl">Velocidad</span>
+                <span class="stat-val" id="stat-polar">0%</span>
+                <span class="stat-lbl">Polarización</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="stat-r0">0.00</span>
+                <span class="stat-lbl">Tasa R0 (Difusión)</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="stat-fragility">Baja</span>
+                <span class="stat-lbl">Fragilidad Sistémica</span>
             </div>
         </div>
         <div id="chart-container">
@@ -453,10 +540,10 @@
         </div>
 
         <div id="milestones" style="margin-top: 10px; font-size: 0.65rem; color: var(--text-dim); display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-            <span>T25%: <b id="m-25">-</b></span>
-            <span>T50%: <b id="m-50">-</b></span>
-            <span>T75%: <b id="m-75">-</b></span>
-            <span>T90%: <b id="m-90">-</b></span>
+            <span>Hito 25%: <b id="m-25">-</b> ticks</span>
+            <span>Hito 50%: <b id="m-50">-</b> ticks</span>
+            <span>Hito 75%: <b id="m-75">-</b> ticks</span>
+            <span>Hito 90%: <b id="m-90">-</b> ticks</span>
         </div>
 
         <div style="margin-top: 15px; font-size: 0.75rem; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
@@ -470,19 +557,28 @@
     </div>
 
     <div class="section">
-        <button id="btn-didactic" style="background: transparent; border-color: var(--accent); color: var(--accent);">MODO DIDÁCTICO</button>
+        <button id="btn-didactic" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); font-weight: bold; letter-spacing: 1px;">ABRIR TRATADO CIENTÍFICO</button>
+        <button id="btn-report" style="background: transparent; border: 1px solid #ffcc00; color: #ffcc00; margin-top: 8px; font-weight: bold;">GENERAR REPORTE ANALÍTICO</button>
+    </div>
+
+    <div class="section" style="flex: 1; border-top: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column;">
+        <div class="section-title">Monitor de Eventos (Log)</div>
+        <div id="event-log" style="flex: 1; font-family: monospace; font-size: 0.7rem; color: var(--accent); overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 4px;">
+            > Sistema iniciado...
+        </div>
     </div>
 </aside>
 
 <div id="modal">
     <div class="modal-content" style="max-width: 1000px;">
-        <h2 style="font-size: 2.2rem; margin-bottom: 30px; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px;">TRATADO SOBRE LA DINÁMICA DE LA INFORMACIÓN Y NEUROPLASTICIDAD SOCIAL</h2>
+        <h2 style="font-size: 2.2rem; margin-bottom: 30px; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px;">SUMMA SOCIOLOGICA: TRATADO INTEGRAL SOBRE DINÁMICA INFORMACIONAL, NEUROBIOLOGÍA COLECTIVA Y EPIGENÉTICA SOCIAL</h2>
         <div style="line-height: 1.8; font-size: 1rem; text-align: justify; color: #e2e8f0;">
 
-            <p style="margin-bottom: 20px;">Bienvenido a <strong>SOCIODYNAMICS 2.0</strong>. Esta aplicación no es simplemente un juego visual, sino un simulador basado en agentes (ABM - Agent-Based Modeling) diseñado para la alta divulgación científica en áreas de la sociología computacional, la epidemiología social y la neurobiología del comportamiento. Bajo la dirección conceptual del Dr. Juan Moisés de la Serna, exploramos cómo la información no solo viaja a través de cables o señales, sino que se infiltra en el tejido mismo de la plasticidad neuronal y la epigenética conductual.</p>
+            <p style="margin-bottom: 20px;">Bienvenido a la versión avanzada de <strong>SOCIODYNAMICS: NEXUS CORE</strong>. Esta plataforma representa la vanguardia en la simulación de sistemas complejos aplicados a la sociología computacional. No nos hallamos ante una mera representación gráfica, sino ante un Laboratorio de Agentes Inteligentes (ABM) diseñado bajo los más estrictos estándares de la divulgación científica académica. Este proyecto, inspirado en las investigaciones del Dr. Juan Moisés de la Serna, busca desentrañar los hilos invisibles que conectan la propagación de un bit de información con la reconfiguración sináptica y la expresión génica en el comportamiento de las masas.</p>
 
-            <h3 style="color: var(--accent); margin-top: 40px; font-size: 1.5rem;">I. Fundamentos de la Difusión de Innovaciones y Rumores</h3>
-            <p>La difusión de cualquier entidad informacional —sea una innovación tecnológica, un rumor malintencionado o una noticia científica verificada— sigue patrones que han sido estudiados extensamente por figuras como Everett Rogers. En este simulador, implementamos las categorías de adoptantes (innovadores, adoptantes tempranos, mayoría temprana, mayoría tardía y rezagados) a través de los perfiles psicográficos de nuestros agentes.</p>
+            <h3 style="color: var(--accent); margin-top: 40px; font-size: 1.5rem;">I. Teoría General de la Difusión: De Rogers a la Transmisión Cuántica Social</h3>
+            <p>La difusión de innovaciones y noticias no es un proceso estocástico simple. Como postuló Everett Rogers en 1962, existe una estructura subyacente que determina el éxito o fracaso de una idea. En este simulador, cada agente posee un "Coeficiente de Innovación" que lo sitúa en el espectro de adoptantes: desde los <em>Innovadores</em> (visionarios que asumen riesgos) hasta los <em>Rezagados</em> (aquellos con alta resistencia al cambio). Sin embargo, hemos evolucionado este modelo incorporando la teoría de redes complejas.</p>
+            <p>La topología de la red —el mapa de quién conoce a quién— es el determinante crítico. En una red de "Mundo Pequeño" (Small World), la información puede saltar comunidades enteras gracias a unos pocos "vínculos débiles" (vínculos entre conocidos lejanos). Mark Granovetter demostró que estos puentes son mucho más valiosos para la difusión de novedades que los vínculos fuertes (familiares y amigos íntimos), ya que estos últimos tienden a circular información redundante dentro de clusters cerrados.</p>
             <p>Cada individuo posee un <strong>Umbral de Adopción</strong> único. Según la teoría de Granovetter sobre la fuerza de los vínculos débiles, los individuos que actúan como "puentes" entre comunidades (aquellos con conexiones que saltan de un grupo a otro) son críticos para evitar que una información se quede estancada en una cámara de eco local. En la visualización "Red Estándar", estos puentes se iluminan cuando facilitan el salto de la información entre clusters aislados.</p>
 
             <h3 style="color: var(--s-received); margin-top: 40px; font-size: 1.5rem;">II. Modelado SIR Adaptado a la Sociodinámica</h3>
@@ -537,8 +633,12 @@
             <h3 style="color: var(--accent); margin-top: 30px;">La Teoría de la Inoculación</h3>
             <p>William McGuire propuso que, al igual que una vacuna biológica, es posible "inocular" a las personas contra la persuasión malintencionada exponiéndolas a argumentos débiles que luego son refutados. En SOCIODYNAMICS, el papel de los Desmentidores es precisamente este. Al propagar correcciones, no solo intentan curar a los ya infectados, sino que actúan como un factor de inmunización para los nodos susceptibles, elevando su umbral de resistencia ante futuros ataques de la misma naturaleza.</p>
 
-            <h3 style="color: var(--accent); margin-top: 30px;">Análisis de la Viralidad Emocional</h3>
-            <p>Las investigaciones en psicología de la comunicación demuestran que las emociones de "alta activación" (ira, miedo, asombro) son las que más favorecen el acto de compartir. Por el contrario, emociones de "baja activación" (tristeza, serenidad) tienden a frenar la comunicación. Nuestra simulación utiliza estos hallazgos para diferenciar la velocidad de los Rumores frente a las Campañas Sanitarias. Los rumores suelen diseñarse para disparar la amígdala, garantizando una ventaja competitiva inicial sobre la información racional.</p>
+            <h3 style="color: var(--accent); margin-top: 30px;">Análisis de la Viralidad Emocional y el Secuestro de la Amígdala</h3>
+            <p>La viralidad no es un accidente, sino el resultado de un diseño informacional que explota vulnerabilidades evolutivas. Las emociones de "alta activación" (ira, miedo, indignación) generan una respuesta fisiológica que exige acción inmediata: en el entorno digital, esa acción es el botón de "compartir". Este fenómeno, conocido como "Secuestro de la Amígdala", cortocircuita los procesos de deliberación de la corteza prefrontal.</p>
+            <p>Nuestra simulación modela esto mediante el parámetro "Carga Emocional" intrínseco a los Rumores y <em>Fake News</em>. Estos contenidos poseen una "Probabilidad de Contagio" superior porque reducen el umbral de resistencia del receptor de forma instantánea. Por el contrario, la información científica o las campañas institucionales suelen apelar a emociones de "baja activación" o al razonamiento lógico, lo que requiere un esfuerzo metabólico superior y, por ende, una difusión más pausada y reflexiva.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Fenomenología de la Post-Verdad y la Verdad Líquida</h3>
+            <p>En la era de la post-verdad, los hechos objetivos tienen menos influencia en la formación de la opinión pública que las apelaciones a las emociones y a las creencias personales. Este simulador permite observar la transición de una red de confianza sólida a un estado de "Verdad Líquida", donde la validez de una información ya no depende de su correspondencia con la realidad, sino de su coherencia con la identidad del grupo. Los agentes, al interactuar repetidamente en cámaras de eco, terminan por rechazar cualquier desmentido (nodos morados) no por su falta de pruebas, sino porque aceptarlos supondría una traición a la cohesión de su cluster social.</p>
 
             <h3 style="color: var(--accent); margin-top: 30px;">Influencia de la Edad y el Nivel Educativo</h3>
             <p>Los estudios demográficos sugieren que la vulnerabilidad ante la desinformación varía con la edad. Los individuos más jóvenes suelen poseer una mayor alfabetización digital pero una menor resistencia ante la presión del grupo de iguales. Por otro lado, individuos de edad avanzada pueden tener una mayor confianza en fuentes tradicionales, lo que los hace vulnerables a cadenas de WhatsApp si estas parecen provenir de fuentes familiares. El simulador asigna perfiles de "Edad" y "Educación" que modulan el Pensamiento Crítico dinámicamente, permitiendo observar cómo distintas cohortes poblacionales reaccionan ante un mismo evento informativo.</p>
@@ -676,6 +776,30 @@
             <p>Finalmente, debemos considerar el impacto de la red en la salud mental individual. El bombardeo constante de información contradictoria puede llevar a un estado de "Anomia Informativa", donde el individuo pierde la capacidad de distinguir entre lo real y lo ficticio, cayendo en un nihilismo epistémico. La variable "Pensamiento Crítico" en nuestro simulador es, por tanto, una métrica de la resiliencia mental de la población.</p>
             <p>Fortalecer esta resiliencia requiere no solo mejores algoritmos, sino una comprensión profunda de nuestra propia arquitectura cognitiva. SOCIODYNAMICS es una invitación a la introspección: ¿cómo de susceptibles somos nosotros mismos a las ondas que visualizamos en la pantalla? La conciencia de nuestra vulnerabilidad es el primer paso hacia una verdadera soberanía intelectual en el siglo XXI.</p>
 
+            <h3 style="color: var(--accent); margin-top: 30px;">XVI. Neurobiología de la Atención Selectiva en Redes</h3>
+            <p>La atención selectiva es el proceso mediante el cual el cerebro filtra estímulos irrelevantes para enfocarse en aquellos que considera significativos. En un entorno saturado (como el modelado en este simulador), la atención se convierte en un recurso extremadamente escaso. Los mecanismos neurobiológicos, específicamente el sistema activador reticular ascendente (SARA) y la corteza prefrontal, trabajan para priorizar información que resuene con los esquemas cognitivos ya existentes.</p>
+            <p>Este filtrado biológico es la raíz de lo que visualizamos como "Cámaras de Eco". El cerebro prefiere procesar información que confirme sus creencias previas porque esto reduce la carga cognitiva y evita la incomodidad de la disonancia. En SOCIODYNAMICS, esto se traduce en que los agentes tienen una mayor probabilidad de "atender" (procesar) mensajes provenientes de su propia comunidad, ilustrando cómo nuestra biología facilita la fragmentación social si no se ejercita activamente el pensamiento crítico.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XVII. Sociología del Conflicto Epistémico y Polarización</h3>
+            <p>El conflicto epistémico ocurre cuando dos grupos no solo discrepan sobre los hechos, sino sobre los métodos para validar qué es un hecho. Esta simulación muestra que la polarización (métrica visible en el panel de control) no surge solo por la falta de información, sino por la arquitectura de la red y los algoritmos de recomendación. La polarización se autoalimenta: a medida que los clusters se vuelven más homogéneos, la probabilidad de que una información "puente" sea aceptada disminuye drásticamente.</p>
+            <p>La métrica de Polarización implementada utiliza la varianza de la penetración del mensaje entre comunidades. Una alta polarización indica que la red ha fallado en su función de cohesión sistémica, dividiéndose en sub-redes aisladas que operan bajo realidades paralelas. Este es el desafío fundamental de las sociedades democráticas en la era digital: cómo mantener un suelo epistémico común sobre el cual construir el diálogo político y social.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XVIII. Dinámica de Sistemas y Puntos de Inflexión</h3>
+            <p>La difusión de información en redes sociales se comporta como un sistema dinámico no lineal. Esto significa que pequeños cambios en los parámetros (por ejemplo, un ligero aumento en la probabilidad de verificación) pueden llevar a resultados macroscópicos radicalmente diferentes. Es lo que se conoce como "Transición de Fase". En SOCIODYNAMICS, puede observar cómo un rumor que parece controlado de repente explota y satura la red al alcanzar un "Punto de Inflexión" o masa crítica.</p>
+            <p>Comprender estos puntos de inflexión es crucial para la gestión de crisis informativas. Las intervenciones de desmentido deben ser rápidas y estratégicas, apuntando a nodos de alta intermediación antes de que el sistema cruce el umbral de no retorno. La simulación demuestra que la prevención (a través del pensamiento crítico basal) es siempre más eficiente que la curación (el desmentido reactivo) una vez iniciada la cascada de información.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XIX. Teoría de la Información de Shannon Aplicada al Contagio</h3>
+            <p>Claude Shannon definió la información como la reducción de la incertidumbre. En el contexto del contagio social, un mensaje posee "Entropía Informativa" basada en su novedad y relevancia. Cuanto más inesperado es un mensaje (mayor sorpresa), mayor es su capacidad de carga informativa y, paradójicamente, mayor es su potencial para volverse viral, independientemente de su veracidad.</p>
+            <p>Este simulador emula el ruido en el canal. A medida que la red se satura (fatiga informativa), la relación señal-ruido disminuye. Los agentes dejan de procesar la información no porque el canal esté roto, sino porque su capacidad de recepción está colapsada por la redundancia. Aquí es donde los "Líderes de Opinión" actúan como amplificadores de señal, ayudando a que ciertos mensajes superen el ruido de fondo mediante su prestigio y autoridad percibida.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XX. Algoritmos de Recomendación y la Muerte del Vínculo Débil</h3>
+            <p>Los algoritmos modernos están diseñados para maximizar el tiempo de permanencia, no la diversidad informativa. Esto se logra mediante el refuerzo de lo conocido (vínculos fuertes). En la simulación, al elevar el "Factor de Algoritmo", observará la desaparición física de las conexiones transversales entre comunidades. La red se fragmenta en islas de pensamiento homogéneo.</p>
+            <p>Esta es la "Muerte del Vínculo Débil". Sin puentes informativos, la sociedad pierde su capacidad de autocrítica colectiva. Las innovaciones tecnológicas que dependen de la adopción masiva se detienen en las fronteras de los clusters, y los desmentidos científicos nunca llegan a quienes más los necesitan. La visualización topológica muestra claramente esta segregación algorítmica, permitiendo entender por qué la arquitectura técnica de las redes sociales es hoy un determinante de la salud democrática.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XXI. Neurobiología de la Plasticidad por Repetición</h3>
+            <p>La repetición constante de un mensaje (exposición repetida) fortalece las conexiones neuronales mediante la Potenciación a Largo Plazo (LTP). En SOCIODYNAMICS, los agentes que reciben el mismo mensaje desde múltiples fuentes experimentan una reducción en su umbral de aceptación, un fenómeno que emula el "Efecto de Verdad Ilusoria". El cerebro confunde la familiaridad con la veracidad.</p>
+            <p>Desde la perspectiva de la neuroplasticidad social, las redes sociales están realizando una "reprogramación" masiva de nuestros procesos de validación. Al favorecer el procesamiento heurístico rápido frente al analítico lento, se erosiona la base del pensamiento crítico. El simulador, al permitir inyectar "Inoculación" (campañas de alfabetización), intenta demostrar que es posible revertir esta tendencia mediante el entrenamiento consciente de la atención y la duda metódica.</p>
+
             <h3 style="color: var(--accent); margin-top: 30px;">Ética de la Comunicación en la Era de la Post-verdad</h3>
             <p>A medida que cerramos este tratado, es imperativo abordar la dimensión ética. Las herramientas de simulación como SOCIODYNAMICS nos revelan lo frágil que es el consenso social ante ataques informativos bien orquestados. En un mundo donde la atención es el recurso más escaso, la veracidad a menudo se sacrifica en el altar del compromiso (engagement).</p>
             <p>La responsabilidad del usuario de este simulador es comprender que detrás de cada punto gris, rojo o verde, hay una representación de un ser humano real cuya visión del mundo puede ser moldeada por el flujo informacional. La neuroplasticidad social nos da la esperanza de que, mediante la educación y el fortalecimiento de las redes de confianza, podemos construir una sociedad más resiliente ante la manipulación, preservando la integridad de nuestra esfera pública para las generaciones venideras.</p>
@@ -701,23 +825,21 @@
 
 <script>
     /**
-     * SOCIODYNAMICS ENGINE v2.0
-     * Simulación de red basada en física y agentes psicológicos.
+     * SOCIODYNAMICS CORE ENGINE v3.0 - "NEXUS"
+     * Optimizaciones de renderizado aditivo y lógica de grafos complejos.
      */
 
-    // --- MATH & UTILS ---
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
     const lerp = (a, b, t) => a + (b - a) * t;
 
-    // --- ENGINE CONSTANTS ---
     const STATES = { UNINFORMED: 0, RECEIVED: 1, ACTIVE: 2, INACTIVE: 3, VERIFIER: 4, DEBUNKER: 5 };
     const STATE_COLORS = {
-        [STATES.UNINFORMED]: '#475569',
-        [STATES.RECEIVED]: '#f59e0b',
-        [STATES.ACTIVE]: '#ef4444',
-        [STATES.INACTIVE]: '#3b82f6',
-        [STATES.VERIFIER]: '#10b981',
-        [STATES.DEBUNKER]: '#8b5cf6'
+        [STATES.UNINFORMED]: '#1e293b',
+        [STATES.RECEIVED]: '#ffcc00',
+        [STATES.ACTIVE]: '#ff3333',
+        [STATES.INACTIVE]: '#0088ff',
+        [STATES.VERIFIER]: '#00ffaa',
+        [STATES.DEBUNKER]: '#bb00ff'
     };
 
     // --- AGENT CLASS ---
@@ -815,42 +937,50 @@
             const msg = world.msgParams;
             const type = document.getElementById('msg-type').value;
 
-            // 1. Decisión de IGNORAR vs LEER
-            const bond = this.community === target.community ? 1.2 : 0.8;
-            const readProb = target.curiosity * bond * (1 + this.influence * 0.2);
-        if (Math.random() > readProb) return;
+            // 1. Decisión de Atender (Atención Selectiva / Sesgo de Confirmación)
+            const isStrongTie = this.community === target.community;
 
-            // 2. Decisión de CREER
+            // Espiral del Silencio: Si el agente percibe que su opinión (si la tuviera) sería minoritaria, ignora el mensaje.
+            // En este modelo ABM simplificado, si la mayoría de sus contactos están en un estado opuesto al emisor, hay resistencia.
+            const contactsInState = target.contacts.filter(cid => world.agents[cid].state === this.state).length;
+            const perceivedClimate = contactsInState / (target.contacts.length || 1);
+            if (perceivedClimate < 0.15 && Math.random() < 0.7) return; // Temor al aislamiento social
+
+            const bondFactor = isStrongTie ? 1.5 : 0.5;
+            const attentionProb = target.curiosity * bondFactor * (1 + this.influence * 0.4);
+            if (Math.random() > attentionProb) return;
+
+            // 2. Evaluación Cognitiva (Modelo ELM)
             const activeFriends = target.contacts.filter(cid => world.agents[cid].state === STATES.ACTIVE).length;
             const socialProof = activeFriends / target.contacts.length;
 
-            // Confianza en la fuente: mayor si es de la misma comunidad o si es un líder influyente
-            const sourceTrust = (this.community === target.community ? 1.3 : 0.7) * (1 + this.influence * 0.5);
-            target.trust = lerp(target.trust, sourceTrust, 0.1); // La confianza evoluciona con la interacción
+            // Sesgo de Confirmación: Mayor facilidad para aceptar lo que viene de la propia comunidad
+            const sourceAuthority = (isStrongTie ? 1.3 : 0.6) * (1 + this.influence * 0.9);
+            target.trust = lerp(target.trust, sourceAuthority, 0.1);
 
-            let beliefProb = msg.baseProb * target.trust * (1 + socialProof * 0.5);
-            if (type === 'innovacion') beliefProb = msg.baseProb * target.benefitPerception * (1 + socialProof);
+            let acceptanceProb = msg.baseProb * target.trust * (1 + Math.pow(socialProof, 0.7));
+            if (type === 'innovacion') acceptanceProb = msg.baseProb * target.benefitPerception * (1 + socialProof * 3);
 
-            const ageResistance = target.age > 55 ? 0.15 : 0;
-            const criticalResistance = (target.criticalThinking * 0.7 + target.education * 0.3 + ageResistance) * world.globalCritical;
-            beliefProb -= criticalResistance;
+            // Resistencia por Inoculación Cognitiva
+            const inoculationCount = target.history.filter(h => h.event.includes("desmentida")).length;
+            const resistanceBase = (target.criticalThinking * 0.9 + target.education * 0.1 + inoculationCount * 0.3) * world.globalCritical;
+            acceptanceProb = Math.max(0.01, acceptanceProb - resistanceBase);
 
-            if (Math.random() < beliefProb) {
-                // Cree la información
+            if (Math.random() < acceptanceProb) {
                 target.receiveInfo(this, world);
                 this.sharedCount++;
                 this.reachedCount++;
                 const key = this.id < target.id ? `${this.id}-${target.id}` : `${target.id}-${this.id}`;
-                world.pathUsage.set(key, world.tick); // Guardar el tick de último uso para animación
+                const pData = world.pathUsage.get(key);
+                if (pData && typeof pData === 'object') { pData.last = world.tick; pData.count++; }
                 world.addParticle(this, target, STATE_COLORS[this.state]);
 
-                // Emisión de onda luminosa al compartir
                 world.waves.push({
                     x: this.x, y: this.y,
-                    r: 0, maxR: 60,
-                    alpha: 0.6,
+                    r: 0, maxR: 100,
+                    alpha: 0.85,
                     color: STATE_COLORS[this.state],
-                    thick: 3
+                    thick: 6
                 });
             }
         }
@@ -858,50 +988,47 @@
         receiveInfo(sender, world) {
             this.infectedBy = sender.id;
             this.receivedAt = world.tick;
-            this.history.push({ t: world.tick, event: "Recibió información de " + sender.id });
+            this.history.push({ t: world.tick, event: `Absorción de información vía Nodo #${sender.id}` });
 
-            // 3. Decisión de VERIFICAR (antes de compartir)
-            const verifyProb = (this.criticalThinking * 0.8 + this.education * 0.2) * (1 - world.msgParams.viralFactor) * world.probVerify * 3;
+            // 3. Verificación Crítica (Filtro Prefrontal)
+            const verifyProb = (this.criticalThinking * 0.9 + this.education * 0.1) * (1 - world.msgParams.viralFactor * 0.5) * world.probVerify * 4;
 
             if (Math.random() < verifyProb) {
                 this.state = STATES.VERIFIER;
-                this.history.push({ t: world.tick, event: "Verificó la noticia" });
+                this.history.push({ t: world.tick, event: "Verificación activa iniciada" });
 
-                // Si verifica y la noticia es falsa, se vuelve desmentidor tras un tiempo
-                if (world.msgParams.isDeceptive && Math.random() > 0.3) {
-                    this.targetTick = world.tick + 60; // ~1 seg a 60fps
+                if (world.msgParams.isDeceptive && Math.random() > 0.25) {
+                    this.targetTick = world.tick + 50;
                 }
                 return;
             }
 
-            // 4. Decisión de COMPARTIR (Activar)
+            // 4. Activación Conductual (Compartir)
             this.state = STATES.RECEIVED;
-            const shareDecisionProb = world.probShare * (1 + this.influence) * (this.curiosity * 0.5 + 0.5);
+            const shareDecisionProb = world.probShare * (1 + this.influence * 0.5) * (this.curiosity * 0.4 + 0.6);
 
             if (Math.random() < shareDecisionProb) {
-                const readTicks = 30 + (1 - this.curiosity) * 90;
-                this.targetTick = world.tick + readTicks;
+                const incubation = 20 + (1.2 - this.curiosity) * 80;
+                this.targetTick = world.tick + incubation;
             } else {
-                // Lo cree pero no lo comparte tras un tiempo de reflexión
-                this.targetTick = world.tick + 120;
+                this.targetTick = world.tick + 150;
             }
         }
 
         tryCure(target, world) {
-            // El desmentidor intenta convencer al receptor (basado en memoria y educación)
-            const cureProb = 0.2 * (1 + target.criticalThinking) * (target.memory);
+            // Efecto de Inoculación y Desmentido
+            const cureProb = 0.25 * (1 + target.criticalThinking) * (target.memory) * (this.influence + 0.5);
             if (Math.random() < cureProb) {
                 target.state = STATES.INACTIVE;
-                target.history.push({ t: world.tick, event: "Información desmentida por #" + this.id });
+                target.history.push({ t: world.tick, event: `Inoculación exitosa vía Desmentidor #${this.id}` });
                 world.addParticle(this, target, STATE_COLORS[STATES.DEBUNKER]);
 
-                // Efecto visual de desmentido (Círculos concéntricos morados)
                 world.waves.push({
                     x: target.x, y: target.y,
-                    r: 0, maxR: 40,
-                    alpha: 0.8,
+                    r: 0, maxR: 60,
+                    alpha: 0.9,
                     color: STATE_COLORS[STATES.DEBUNKER],
-                    thick: 4
+                    thick: 6
                 });
             }
         }
@@ -1088,7 +1215,7 @@
                 this.agents[j].contacts.push(i);
                 const key = i < j ? `${i}-${j}` : `${j}-${i}`;
                 this.connections.push([i, j, key]);
-                this.pathUsage.set(key, 0);
+                this.pathUsage.set(key, { last: 0, count: 0 });
             }
         }
 
@@ -1101,17 +1228,25 @@
                 innovacion: { baseProb: 0.3, persistence: 3.0, viralFactor: 0.4, isDeceptive: false },
                 campaña: { baseProb: 0.4, persistence: 2.0, viralFactor: 0.1, isDeceptive: false },
                 whatsapp: { baseProb: 0.7, persistence: 0.5, viralFactor: 0.85, isDeceptive: true },
+                red_social: { baseProb: 0.5, persistence: 1.0, viralFactor: 0.6, isDeceptive: false },
                 television: { baseProb: 0.15, persistence: 1.2, viralFactor: 0.05, isDeceptive: false },
-                meme: { baseProb: 0.95, persistence: 0.1, viralFactor: 0.98, isDeceptive: false }
+                meme: { baseProb: 0.95, persistence: 0.1, viralFactor: 0.98, isDeceptive: false },
+                personalizado: { baseProb: 0.5, persistence: 1.0, viralFactor: 0.5, isDeceptive: true }
             };
             this.msgParams = presets[type] || presets.rumor;
 
-            // Lógica especial para TV: Infecta a muchos aleatorios inicialmente
             if (type === 'television' && this.running) {
-                for(let i=0; i<20; i++) {
+                this.log("Intervención mediática detectada.", 'warn');
+                for(let i=0; i<30; i++) {
                     const a = this.agents[Math.floor(Math.random()*this.agents.length)];
                     if(a.state === STATES.UNINFORMED) a.state = STATES.ACTIVE;
                 }
+            }
+            if (type === 'red_social') {
+                this.algoFactor = 0.85;
+                document.getElementById('algo-range').value = 85;
+                document.getElementById('val-algo').textContent = "85%";
+                this.log("Algoritmo de recomendación intensificado.", 'info');
             }
         }
 
@@ -1121,6 +1256,7 @@
         }
 
         triggerEvent(type) {
+            this.log(`Evento activado: ${type.toUpperCase()}`);
             if (type === 'desmentido') {
                 this.agents.filter(a => a.state === STATES.VERIFIER || a.criticalThinking > 0.5).forEach(a => {
                     a.state = STATES.DEBUNKER;
@@ -1142,6 +1278,17 @@
                 }
             } else if (type === 'censura') {
                 this.agents.forEach(a => { if(a.state === STATES.ACTIVE && Math.random() < 0.5) a.state = STATES.INACTIVE; });
+            } else if (type === 'bot_ia') {
+                const a = this.agents[Math.floor(Math.random() * this.agents.length)];
+                a.isBot = true; a.state = STATES.ACTIVE; a.influence = 1.2; a.fatigue = -100; // Inmune a fatiga
+                this.waves.push({ x: a.x, y: a.y, r: 0, maxR: 200, alpha: 1, color: '#ff0000', thick: 5 });
+                this.log("Infiltración de agente automatizado (Bot IA).", 'err');
+            } else if (type === 'inoculacion') {
+                this.agents.filter(a => Math.random() < 0.2).forEach(a => {
+                    a.history.push({ t: this.tick, event: "Inoculación preventiva (Campaña)" });
+                    a.criticalThinking = Math.min(1, a.criticalThinking + 0.3);
+                });
+                this.log("Campaña de alfabetización mediática inyectada.");
             }
         }
 
@@ -1150,21 +1297,37 @@
             this.tick++;
             const dt = 0.5, friction = 0.92;
             const bounds = { w: this.canvas.width, h: this.canvas.height };
+            const visMode = document.getElementById('vis-mode').value;
 
             // Optimization: Only run heavy physics every few frames for large populations
             const runPhysics = this.popCount < 1000 || this.tick % 2 === 0;
 
             if (runPhysics) {
-                this.agents.forEach(a => {
-                    const dcx = bounds.w/2 - a.x, dcy = bounds.h/2 - a.y;
-                    a.applyForce(dcx * 0.0005, dcy * 0.0005);
-                });
+                if (visMode === 'topology') {
+                    // Posicionamiento topológico (Centros de comunidad)
+                    const centers = [];
+                    for(let i=0; i<6; i++) {
+                        const angle = (i/6)*Math.PI*2;
+                        centers.push({ x: bounds.w/2 + Math.cos(angle)*250, y: bounds.h/2 + Math.sin(angle)*250 });
+                    }
+                    this.agents.forEach(a => {
+                        const c = centers[a.community];
+                        const dx = c.x - a.x, dy = c.y - a.y;
+                        a.applyForce(dx * 0.001, dy * 0.001);
+                    });
+                } else {
+                    this.agents.forEach(a => {
+                        const dcx = bounds.w/2 - a.x, dcy = bounds.h/2 - a.y;
+                        a.applyForce(dcx * 0.0005, dcy * 0.0005);
+                    });
+                }
 
                 this.connections.forEach(([i, j]) => {
                     const a = this.agents[i], b = this.agents[j];
                     const dx = b.x - a.x, dy = b.y - a.y;
                     const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                    const force = (dist - 40) / dist * 0.04;
+                    const ideal = visMode === 'topology' ? 25 : 45;
+                    const force = (dist - ideal) / dist * 0.05;
                     a.applyForce(dx * force, dy * force); b.applyForce(-dx * force, -dy * force);
                 });
             }
@@ -1185,7 +1348,17 @@
             const visMode = document.getElementById('vis-mode').value;
             ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+            // Capa de fondo sutil para sensación de profundidad
+            ctx.fillStyle = 'rgba(2, 4, 8, 1)';
+            ctx.fillRect(0,0, this.canvas.width, this.canvas.height);
+
+            // Rejilla de coordenadas táctica
+            this.drawGrid(ctx);
+
             if (visMode === 'heatmap') this.drawHeatmap(ctx);
+
+            // Activamos mezcla aditiva para las conexiones y partículas
+            ctx.globalCompositeOperation = 'lighter';
 
             if (visMode === 'tree') {
                 this.renderTree(ctx);
@@ -1196,114 +1369,140 @@
             this.waves.forEach(w => {
                 ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
                 ctx.strokeStyle = `rgba(${SimManager.hexToRgb(w.color)}, ${w.alpha})`;
-                ctx.lineWidth = w.thick || 2;
+                ctx.lineWidth = (w.thick || 2) * w.alpha;
                 ctx.stroke();
+                // Destello central
+                if (w.alpha > 0.4) {
+                    ctx.fillStyle = `rgba(${SimManager.hexToRgb(w.color)}, ${w.alpha * 0.2})`;
+                    ctx.fill();
+                }
             });
 
             this.particles.forEach(p => p.draw(ctx));
 
-            // Renderizado de agentes con efectos visuales mejorados
+            // Volvemos a modo normal para los agentes para que sean sólidos
+            ctx.globalCompositeOperation = 'source-over';
+
             const agentsByState = [[], [], [], [], [], []];
             this.agents.forEach(a => agentsByState[a.state].push(a));
 
             agentsByState.forEach((group, state) => {
                 if (group.length === 0) return;
-
                 group.forEach(a => {
                     ctx.fillStyle = STATE_COLORS[state];
 
-                    // Efectos especiales para estados activos
                     if (state === STATES.ACTIVE || state === STATES.DEBUNKER) {
-                        ctx.shadowBlur = 12; ctx.shadowColor = ctx.fillStyle;
-                        // Pulso visual sutil
-                        const pulse = 1 + Math.sin(this.tick * 0.1) * 0.2;
+                        ctx.shadowBlur = 15; ctx.shadowColor = ctx.fillStyle;
+                        const pulse = 1 + Math.sin(this.tick * 0.15) * 0.15;
                         ctx.beginPath(); ctx.arc(a.x, a.y, a.radius * pulse, 0, Math.PI * 2); ctx.fill();
                         ctx.shadowBlur = 0;
                     } else {
                         ctx.beginPath(); ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2); ctx.fill();
                     }
 
-                    // Halo para Influencers / Líderes de Opinión
                     if (a.isInfluencer) {
-                        ctx.shadowBlur = 15; ctx.shadowColor = 'white';
-                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 4, 0, Math.PI * 2); ctx.stroke();
-                        ctx.shadowBlur = 0;
+                        ctx.save();
+                        ctx.translate(a.x, a.y);
+                        ctx.rotate(this.tick * 0.02);
+                        ctx.strokeStyle = '#00f2ff';
+                        ctx.lineWidth = 2;
+                        // Marcadores angulares de tipo radar
+                        for(let i=0; i<4; i++) {
+                            ctx.rotate(Math.PI/2);
+                            ctx.beginPath(); ctx.moveTo(a.radius + 5, 0); ctx.lineTo(a.radius + 12, 0); ctx.stroke();
+                        }
+                        ctx.restore();
 
-                        // Halo exterior animado (Doble anillo para superdifusores)
-                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                        ctx.setLineDash([4, 4]);
-                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 8, this.tick * 0.04, this.tick * 0.04 + Math.PI * 2); ctx.stroke();
-                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 12, -this.tick * 0.02, -this.tick * 0.02 + Math.PI * 2); ctx.stroke();
-                        ctx.setLineDash([]);
+                        ctx.beginPath(); ctx.arc(a.x, a.y, a.radius + 6, 0, Math.PI * 2);
+                        ctx.strokeStyle = 'rgba(0, 242, 255, 0.4)';
+                        ctx.stroke();
                     }
                 });
             });
         }
 
         renderNetwork(ctx) {
-            // Dibujar conexiones estándar
-            this.connections.forEach(([i, j, key]) => {
+            // Marco de visualización Cyber
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(10, 10, this.canvas.width - 20, this.canvas.height - 20);
 
-                const lastUsage = this.pathUsage.get(key) || 0;
-                const recency = Math.max(0, 1 - (this.tick - lastUsage) / 50); // Glow que se desvanece
+            this.connections.forEach(([i, j, key]) => {
+                const a = this.agents[i], b = this.agents[j];
+                const pData = this.pathUsage.get(key);
+                const lastUsage = pData ? (typeof pData === 'object' ? pData.last : pData) : 0;
+                const recency = Math.max(0, 1 - (this.tick - lastUsage) / 50);
+                const isStrongTie = a.community === b.community;
 
                 if (recency > 0) {
                     ctx.beginPath();
-                    ctx.strokeStyle = `rgba(59, 130, 246, ${0.1 + recency * 0.8})`;
-                    ctx.lineWidth = 0.5 + recency * 2;
-                    ctx.moveTo(this.agents[i].x, this.agents[i].y);
-                    ctx.lineTo(this.agents[j].x, this.agents[j].y);
+                    // Vínculos fuertes (intra-comunidad) en azul cian, débiles (puentes) en blanco/oro
+                    const baseColor = isStrongTie ? '0, 242, 255' : '255, 215, 0';
+                    ctx.strokeStyle = `rgba(${baseColor}, ${0.2 + recency * 0.8})`;
+                    ctx.lineWidth = 0.8 + recency * 2.5;
+                    ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
                     ctx.stroke();
 
-                    // Pulso de onda viajando por la conexión
-                    const pulseOffset = (this.tick * 0.05) % 1;
-                    const p1 = this.agents[i], p2 = this.agents[j];
-                    // Si i fue infectado por j, la onda va de j a i, y viceversa
-                    const source = p1.infectedBy === p2.id ? p2 : p1;
-                    const target = source === p1 ? p2 : p1;
-
+                    // Pulso cinético
+                    const pulseOffset = (this.tick * 0.04) % 1;
+                    const source = a.infectedBy === b.id ? b : a;
+                    const target = source === a ? b : a;
                     const wx = lerp(source.x, target.x, pulseOffset);
                     const wy = lerp(source.y, target.y, pulseOffset);
 
-                    ctx.fillStyle = 'rgba(255, 255, 255, ' + recency + ')';
-                    ctx.beginPath(); ctx.arc(wx, wy, 2, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = isStrongTie ? '#fff' : '#ffd700';
+                    ctx.beginPath(); ctx.arc(wx, wy, 2.5, 0, Math.PI * 2); ctx.fill();
+                    // Aura del pulso
+                    ctx.shadowBlur = 10; ctx.shadowColor = ctx.fillStyle;
+                    ctx.beginPath(); ctx.arc(wx, wy, 4, 0, Math.PI * 2); ctx.fill();
+                    ctx.shadowBlur = 0;
                 } else {
                     ctx.beginPath();
-                    ctx.strokeStyle = 'rgba(255,255,255,0.02)';
-                    ctx.lineWidth = 0.5;
-                    ctx.moveTo(this.agents[i].x, this.agents[i].y);
-                    ctx.lineTo(this.agents[j].x, this.agents[j].y);
+                    ctx.strokeStyle = isStrongTie ? 'rgba(0, 242, 255, 0.03)' : 'rgba(255, 215, 0, 0.05)';
+                    ctx.lineWidth = isStrongTie ? 0.4 : 0.6;
+                    ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
                     ctx.stroke();
                 }
             });
         }
 
         renderTree(ctx) {
-            // Dibujar árbol jerárquico
-            ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.4)';
+            ctx.lineWidth = 1.5;
             this.agents.forEach(a => {
                 if (a.infectedBy !== null) {
                     const source = this.agents[a.infectedBy];
+                    // Línea curva para el árbol (Bezier) para una estética más orgánica/neuronal
+                    const midX = (source.x + a.x) / 2;
                     ctx.beginPath();
                     ctx.moveTo(source.x, source.y);
-                    ctx.lineTo(a.x, a.y);
+                    ctx.quadraticCurveTo(midX, source.y, a.x, a.y);
                     ctx.stroke();
 
-                    // Flecha indicadora de dirección
-                    const angle = Math.atan2(a.y - source.y, a.x - source.x);
-                    const tx = lerp(source.x, a.x, 0.8), ty = lerp(source.y, a.y, 0.8);
-                    ctx.save();
-                    ctx.translate(tx, ty);
-                    ctx.rotate(angle);
-                    ctx.beginPath();
-                    ctx.moveTo(-5, -3); ctx.lineTo(0, 0); ctx.lineTo(-5, 3);
-                    ctx.stroke();
-                    ctx.restore();
+                    // Marcador de dirección animado
+                    const t = (this.tick * 0.02) % 1;
+                    const bX = (1-t)*(1-t)*source.x + 2*(1-t)*t*midX + t*t*a.x;
+                    const bY = (1-t)*(1-t)*source.y + 2*(1-t)*t*source.y + t*t*a.y;
+
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath(); ctx.arc(bX, bY, 2, 0, Math.PI * 2); ctx.fill();
                 }
             });
+        }
+
+        log(msg, type = 'info') {
+            if (this.id !== 'canvas-1') return;
+            const logEl = document.getElementById('event-log');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'warn' ? '#ffcc00' : (type === 'err' ? '#ff3333' : 'var(--accent)');
+            logEl.innerHTML = `<div style="margin-bottom:4px; border-left: 2px solid ${color}; padding-left: 5px;"><span style="color:var(--text-dim)">[${time}]</span> <span style="color:${color}">${msg}</span></div>` + logEl.innerHTML;
+            if (logEl.childNodes.length > 50) logEl.removeChild(logEl.lastChild);
+
+            if (type === 'err') {
+                const vp = document.getElementById('viewport');
+                vp.classList.add('screen-shake');
+                setTimeout(() => vp.classList.remove('screen-shake'), 200);
+            }
         }
 
         updateStats(isPrimary) {
@@ -1318,10 +1517,10 @@
 
             // Milestones
             const p = informed / this.popCount;
-            if (!this.milestones.p25 && p >= 0.25) this.milestones.p25 = this.tick;
-            if (!this.milestones.p50 && p >= 0.50) this.milestones.p50 = this.tick;
-            if (!this.milestones.p75 && p >= 0.75) this.milestones.p75 = this.tick;
-            if (!this.milestones.p90 && p >= 0.90) this.milestones.p90 = this.tick;
+            if (!this.milestones.p25 && p >= 0.25) { this.milestones.p25 = this.tick; this.log("Alcance crítico: 25%.", 'warn'); }
+            if (!this.milestones.p50 && p >= 0.50) { this.milestones.p50 = this.tick; this.log("Umbral de mayoría (50%) alcanzado.", 'warn'); }
+            if (!this.milestones.p75 && p >= 0.75) { this.milestones.p75 = this.tick; this.log("Saturación inminente: 75%.", 'err'); }
+            if (!this.milestones.p90 && p >= 0.90) { this.milestones.p90 = this.tick; this.log("Dominancia total (90%) detectada.", 'err'); }
 
             if (isPrimary) {
                 document.getElementById('stat-informed').textContent = informed;
@@ -1330,14 +1529,43 @@
                 document.getElementById('stat-debunkers').textContent = debunkers;
                 document.getElementById('stat-reach').textContent = (p * 100).toFixed(1) + "%";
 
+                // Cálculo de R0 (promedio de alcanzados por difusores actuales)
+                const activeAgents = this.agents.filter(a => a.state === STATES.ACTIVE);
+                const r0 = activeAgents.length > 0 ? activeAgents.reduce((s, a) => s + a.reachedCount, 0) / activeAgents.length : 0;
+                document.getElementById('stat-r0').textContent = r0.toFixed(2);
+
+                let polarization = 0;
+                const clusters = [0,0,0,0,0,0], clusterTotals = [0,0,0,0,0,0];
+                this.agents.forEach(a => {
+                    clusterTotals[a.community]++;
+                    if (a.state !== STATES.UNINFORMED) clusters[a.community]++;
+                });
+                const rates = clusters.map((c, i) => clusterTotals[i] > 0 ? c / clusterTotals[i] : 0);
+                const avgRate = rates.reduce((a,b) => a+b, 0) / 6;
+                polarization = Math.sqrt(rates.reduce((sq, r) => sq + Math.pow(r - avgRate, 2), 0) / 6);
+                const polarIndex = polarization * 200;
+                document.getElementById('stat-polar').textContent = polarIndex.toFixed(1) + "%";
+
+                const vp = document.getElementById('viewport');
+                if (polarIndex > 60) vp.classList.add('glitch-fx'); else vp.classList.remove('glitch-fx');
+
+                // Fragilidad Sistémica (basada en R0 y baja densidad de verificadores)
+                const fragility = (r0 * 0.7 + (1 - verifiers / this.popCount) * 0.3) * (1 + polarIndex/100);
+                const fragLabel = fragility > 1.5 ? "CRÍTICA" : (fragility > 0.8 ? "ALTA" : "ESTABLE");
+                const fEl = document.getElementById('stat-fragility');
+                fEl.textContent = fragLabel;
+                fEl.style.color = fragLabel === "CRÍTICA" ? "#ff3333" : (fragLabel === "ALTA" ? "#ffcc00" : "#00ffaa");
+
                 const top = [...this.agents].sort((a,b) => b.sharedCount - a.sharedCount)[0];
                 document.getElementById('stat-top-inf').textContent = top && top.sharedCount > 0 ? `ID #${top.id} (${top.sharedCount} dif.)` : "N/A";
 
-                let maxDiff = 0, bestPath = "N/A";
-                // Encontrar el par de nodos con más transmisiones (si lo hubiéramos contado, pero usamos tick. Calculemos el puente real)
-                const topInfectors = [...this.agents].sort((a,b) => b.reachedCount - a.reachedCount).slice(0, 3);
-                if (topInfectors[0] && topInfectors[0].reachedCount > 0) {
-                    bestPath = `ID #${topInfectors[0].id} → Red`;
+                let maxUse = 0, bestPath = "N/A";
+                for (let [key, val] of this.pathUsage) {
+                    if (typeof val === 'object' && val.count > maxUse) {
+                        maxUse = val.count;
+                        const [id1, id2] = key.split('-');
+                        bestPath = `#${id1} ↔ #${id2} (${val.count})`;
+                    }
                 }
                 document.getElementById('stat-path').textContent = bestPath;
 
@@ -1366,6 +1594,30 @@
                 }
 
                 SimManager.drawHistory(this.popCount);
+            }
+        }
+
+        drawGrid(ctx) {
+            const size = 60;
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.05)';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            for (let x = 0; x <= this.canvas.width; x += size) {
+                ctx.moveTo(x, 0); ctx.lineTo(x, this.canvas.height);
+            }
+            for (let y = 0; y <= this.canvas.height; y += size) {
+                ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y);
+            }
+            ctx.stroke();
+
+            // Marcadores de bordes
+            ctx.fillStyle = 'rgba(0, 242, 255, 0.2)';
+            ctx.font = '8px monospace';
+            for (let x = 0; x <= this.canvas.width; x += size*2) {
+                ctx.fillText(x.toString().padStart(4, '0'), x + 2, 10);
+            }
+            for (let y = 0; y <= this.canvas.height; y += size*2) {
+                ctx.fillText(y.toString().padStart(4, '0'), 2, y - 2);
             }
         }
 
@@ -1476,7 +1728,35 @@
             document.getElementById('btn-reset').onclick = () => this.reset();
             document.getElementById('btn-compare').onclick = () => this.toggleCompare();
             document.getElementById('btn-didactic').onclick = () => document.getElementById('modal').style.display='flex';
+            document.getElementById('btn-report').onclick = () => this.generateReport();
             document.getElementById('msg-type').onchange = () => this.sims.forEach(s => s.updateMsgParams());
+        },
+
+        generateReport() {
+            const s = this.sims[0];
+            const informed = s.agents.filter(a => a.state !== STATES.UNINFORMED).length;
+            const debunked = s.agents.filter(a => a.history.some(h => h.event.includes("desmentida"))).length;
+            const top = [...s.agents].sort((a,b) => b.sharedCount - a.sharedCount)[0];
+
+            const reportHtml = `
+                <div style="background:#0f172a; padding:30px; border:2px solid var(--accent); border-radius:12px; color:white; max-width:600px; font-family:monospace;">
+                    <h2 style="color:var(--accent); border-bottom:1px solid var(--accent); padding-bottom:10px; margin-bottom:20px;">INFORME DE ANALÍTICA SOCIAL</h2>
+                    <p><strong>Configuración de Red:</strong> ${s.popCount} nodos / ${s.avgConn} conex. med.</p>
+                    <p><strong>Tipo de Información:</strong> ${document.getElementById('msg-type').value.toUpperCase()}</p>
+                    <hr style="border:0; border-top:1px solid #334155; margin:15px 0;">
+                    <p><strong>Alcance Final:</strong> ${informed} (${(informed/s.popCount*100).toFixed(1)}%)</p>
+                    <p><strong>Efectividad del Desmentido:</strong> ${debunked} nodos neutralizados</p>
+                    <p><strong>Punto de Saturación (T90):</strong> ${s.milestones.p90 || 'N/A'} ticks</p>
+                    <p><strong>Superdifusor Dominante:</strong> Nodo #${top ? top.id : 'N/A'} (Influencia: ${top ? (top.influence*100).toFixed(0) : 0}%)</p>
+                    <p style="margin-top:20px; font-size:0.8rem; color:var(--text-dim);"><em>Certificado por SOCIODYNAMICS NEXUS CORE. El comportamiento humano simulado es una aproximación probabilística.</em></p>
+                    <button onclick="this.parentElement.remove()" class="primary" style="margin-top:20px;">Cerrar Reporte</button>
+                </div>
+            `;
+            const div = document.createElement('div');
+            div.style.position = 'fixed'; div.style.inset = '0'; div.style.background = 'rgba(0,0,0,0.8)';
+            div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.justifyContent = 'center'; div.style.zIndex = '3000';
+            div.innerHTML = reportHtml;
+            document.body.appendChild(div);
         },
 
         toggleCompare() {
@@ -1491,6 +1771,35 @@
         },
 
         triggerEvent(type) { this.sims.forEach(s => s.triggerEvent(type)); },
+
+        loadScenario(name) {
+            this.reset();
+            const s = this.sims[0];
+            const presets = {
+                eco: { algo: 95, conn: 4, cluster: 0.9, share: 80, critical: 10 },
+                viral: { algo: 10, conn: 8, cluster: 0.3, share: 95, critical: 15 },
+                resistance: { algo: 40, conn: 6, cluster: 0.6, share: 50, critical: 75 },
+                innovation: { type: 'innovacion', conn: 5, share: 40, critical: 30 }
+            };
+            const p = presets[name];
+            if (!p) return;
+
+            document.getElementById('algo-range').value = p.algo || 40;
+            document.getElementById('conn-range').value = p.conn || 6;
+            document.getElementById('cluster-range').value = p.cluster || 0.7;
+            document.getElementById('share-range').value = p.share || 60;
+            document.getElementById('critical-range').value = p.critical || 30;
+            if (p.type) document.getElementById('msg-type').value = p.type;
+
+            // Actualizar labels manualmente
+            document.getElementById('val-algo').textContent = (p.algo || 40) + "%";
+            document.getElementById('val-conn').textContent = p.conn || 6;
+            document.getElementById('val-cluster').textContent = p.cluster || 0.7;
+            document.getElementById('val-share').textContent = (p.share || 60) + "%";
+            document.getElementById('val-critical').textContent = (p.critical || 30) + "%";
+
+            this.reset();
+        },
 
         loop() {
             const steps = Math.ceil(this.simSpeed);
@@ -1589,14 +1898,27 @@
             const rect = s.canvas.getBoundingClientRect();
             if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
                 const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+                let agentClicked = false;
                 for (let a of s.agents) {
                     if (Math.hypot(a.x - mx, a.y - my) < 15) {
-                        draggedAgent = a; activeSim = s;
-                        if (a.state === STATES.UNINFORMED) a.state = STATES.ACTIVE;
+                        draggedAgent = a; activeSim = s; agentClicked = true;
+                        if (a.state === STATES.UNINFORMED) {
+                            a.state = STATES.ACTIVE;
+                            s.log(`Paciente Zero activado manualmente: #${a.id}`);
+                        }
                         else if (a.state === STATES.ACTIVE) a.state = STATES.DEBUNKER;
                         else a.state = STATES.INACTIVE;
                         break;
                     }
+                }
+                if (!agentClicked && e.shiftKey) {
+                    // Click en espacio vacío con Shift: Inyectar un pulso de información masivo
+                    s.waves.push({ x: mx, y: my, r: 0, maxR: 300, alpha: 1, color: '#ffcc00', thick: 2 });
+                    s.agents.forEach(a => {
+                        if (Math.hypot(a.x - mx, a.y - my) < 150) {
+                            if (a.state === STATES.UNINFORMED) a.receiveInfo({id: 'SYSTEM', community: -1, influence: 2}, s);
+                        }
+                    });
                 }
             }
         });
@@ -1629,13 +1951,13 @@
                     <strong>AGENTE #${found.id}</strong>
                     <span style="color: var(--text-dim); font-size: 0.6rem;">Comunidad ${found.community}</span>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.7rem;">
-                    <span>Estado:</span><span style="color:var(--accent); font-weight:bold;">${labels[found.state]}</span>
-                    <span>Influencia:</span><span>${(found.influence*100).toFixed(0)}%</span>
-                    <span>Pens. Crítico:</span><span>${(found.criticalThinking*100).toFixed(0)}%</span>
-                    <span>Educación:</span><span>${(found.education*100).toFixed(0)}%</span>
-                    <span>Memoria:</span><span>${(found.memory*100).toFixed(0)}%</span>
-                    <span>Edad:</span><span>${found.age.toFixed(0)} años</span>
+                <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap: 4px; font-size: 0.75rem;">
+                    <span style="color:var(--text-dim)">ESTADO ACTUAL:</span><span style="color:var(--accent); font-weight:bold;">${labels[found.state].toUpperCase()}</span>
+                    <span style="color:var(--text-dim)">POTENCIAL INFLUENCIA:</span><span>${(found.influence*100).toFixed(0)}%</span>
+                    <span style="color:var(--text-dim)">FILTRO CRÍTICO:</span><span>${(found.criticalThinking*100).toFixed(0)}%</span>
+                    <span style="color:var(--text-dim)">CAPITAL EDUCATIVO:</span><span>${(found.education*100).toFixed(0)}%</span>
+                    <span style="color:var(--text-dim)">RETENCIÓN MNÉMICA:</span><span>${(found.memory*100).toFixed(0)}%</span>
+                    <span style="color:var(--text-dim)">COHORTE ETARIA:</span><span>${found.age.toFixed(0)} AÑOS</span>
                 </div>
                 <div style="margin-top: 8px; font-size: 0.65rem; border-top: 1px solid var(--border); padding-top: 4px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px;">
                     <strong>Historial Reciente:</strong>
