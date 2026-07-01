@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Science Blog NLD - Neuro-Sync v9.0</title>
+    <title>Science Blog NLD - Neuro-Sync v10.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -82,14 +82,77 @@
 
         footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #64748b; background: rgba(2, 6, 23, 0.8); }
 
-        /* Article content styling */
+
+        .content-section {
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            letter-spacing: 0.01em;
+            text-align: justify;
+        }
+        .content-section h1 {
+            font-size: 3rem;
+            text-align: center;
+            background: linear-gradient(var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 3rem;
+        }
+        .content-section h2 {
+            border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+            padding-bottom: 0.5rem;
+            margin-top: 3rem;
+        }
+        .content-section p::first-letter {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--accent-primary);
+        }
+
         .content-section h1, .content-section h2 { color: var(--accent-primary); margin: 1.5rem 0 1rem; }
         .content-section p { margin-bottom: 1rem; }
         .academic-panel { background: rgba(0, 242, 255, 0.05); border-left: 4px solid var(--accent-primary); padding: 1rem; margin: 1.5rem 0; font-style: italic; }
         .reference-list { margin-top: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
+
+        /* CRT & Grain Effects */
+        .crt-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none; z-index: 1000;
+            opacity: 0.3;
+        }
+        @keyframes grain {
+            0%, 100% { transform:translate(0, 0) }
+            10% { transform:translate(-1%, -1%) }
+            30% { transform:translate(1%, -1%) }
+            50% { transform:translate(-0.5%, 0.5%) }
+            70% { transform:translate(1%, 0.5%) }
+            90% { transform:translate(-1%, 1%) }
+        }
+        .grain {
+            position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.04; pointer-events: none; z-index: 999;
+            animation: grain 8s steps(10) infinite;
+        }
+
+        .dashboard {
+            border: 2px solid var(--accent-primary);
+            background: rgba(2, 6, 23, 0.9);
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.15), inset 0 0 20px rgba(0, 242, 255, 0.05);
+        }
+
+        .stat-fill {
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
     </style>
 </head>
 <body>
+    <div class="crt-overlay"></div>
+    <div class="grain"></div>
     <nav>
         <a onclick="showSection('home')">Inicio</a>
         <a onclick="showSection('neuro')">Neuroplasticidad</a>
@@ -100,7 +163,7 @@
     <div id="home-view">
         <div class="controls">
             <div class="title-block">
-                <h1>NEURO-SYNC <span style="color: var(--accent-secondary)">9.0</span></h1>
+                <h1>NEURO-SYNC <span style="color: var(--accent-secondary)">10.0</span></h1>
                 <p>Mente Emergente & Sistemas Adaptativos</p>
             </div>
 
@@ -117,6 +180,15 @@
                     <div class="stat-label">Plasticidad Hebbiana</div>
                     <div class="stat-bar"><div id="bar-plasticity" class="stat-fill" style="width: 85%"></div></div>
                 </div>
+
+                <div class="stat-row">
+                    <div class="stat-label">Entropía Mental: <span id="val-entropy">0.12</span></div>
+                    <div class="stat-bar"><div id="bar-entropy" class="stat-fill" style="width: 12%"></div></div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">Eventos de Insight: <span id="val-insights">0</span></div>
+                </div>
+
                 <div class="stat-row">
                     <div class="stat-label">Estado Actual: <span id="display-state">Calma</span></div>
                 </div>
@@ -754,7 +826,7 @@
     </footer>
 
     <script>
-        // ENGINE V9.0 Logic (Hebbian Learning + Avalanches)
+        // ENGINE V10.0 Logic (Hebbian Learning + Avalanches)
         const canvas = document.getElementById('neural-network');
         const ctx = canvas.getContext('2d');
 
@@ -829,9 +901,15 @@
 
             draw() {
                 ctx.beginPath();
+                ctx.save();
+                if (this.activity > 0.1) {
+                    ctx.shadowBlur = 15 * this.activity;
+                    ctx.shadowColor = currentState.primary;
+                }
                 ctx.arc(this.x, this.y, this.size + this.activity * 5, 0, Math.PI * 2);
                 ctx.fillStyle = this.isConcept ? currentState.primary : '#475569';
                 ctx.fill();
+                ctx.restore();
 
                 if (this.isConcept) {
                     ctx.font = 'bold 10px JetBrains Mono';
@@ -889,8 +967,11 @@
                     ctx.beginPath();
                     ctx.moveTo(this.p1.x, this.p1.y);
                     ctx.lineTo(this.p2.x, this.p2.y);
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.3})`;
-                    ctx.lineWidth = this.strength * 2;
+                    const grad = ctx.createLinearGradient(this.p1.x, this.p1.y, this.p2.x, this.p2.y);
+                    grad.addColorStop(0, `${currentState.primary}${Math.floor(opacity*150).toString(16).padStart(2,'0')}`);
+                    grad.addColorStop(1, `${currentState.secondary}${Math.floor(opacity*150).toString(16).padStart(2,'0')}`);
+                    ctx.strokeStyle = grad;
+                    ctx.lineWidth = Math.min(4, this.strength * 3);
                     ctx.stroke();
                 }
             }
@@ -919,6 +1000,8 @@
                     ctx.beginPath();
                     ctx.arc(tx, ty, 2, 0, Math.PI * 2);
                     ctx.fillStyle = currentState.primary;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = currentState.primary;
                     ctx.fill();
 
                     if (this.life <= 0.05) {
@@ -996,7 +1079,10 @@
             }
         }
 
+        let insightCount = 0;
         function triggerInsight(x, y) {
+            insightCount++;
+            document.getElementById('val-insights').innerText = insightCount;
             if (neuroAudio) neuroAudio.playSynapse(x, y);
             insightEvents.push({
                 x, y,
@@ -1113,6 +1199,10 @@
             document.getElementById('bar-dopamine').style.width = `${Math.min(100, dopamine)}%`;
             document.getElementById('bar-plasticity').style.width = `${Math.min(100, plasticity)}%`;
             document.getElementById('display-state').innerText = currentState.name.toUpperCase();
+            const entropy = Math.random() * 0.05 + (pulses.length / 100);
+            document.getElementById('val-entropy').innerText = entropy.toFixed(3);
+            document.getElementById('bar-entropy').style.width = `${Math.min(100, entropy * 100)}%`;
+
 
             const dashCanvas = document.getElementById('freq-analyzer');
             if (dashCanvas) {
@@ -1124,8 +1214,10 @@
                     const dataArray = new Uint8Array(bufferLength);
                     neuroAudio.analyser.getByteTimeDomainData(dataArray);
 
-                    dCtx.lineWidth = 2;
+                    dCtx.lineWidth = 3;
                     dCtx.strokeStyle = currentState.primary;
+                    dCtx.shadowBlur = 10;
+                    dCtx.shadowColor = currentState.primary;
                     dCtx.beginPath();
                     const sliceWidth = dashCanvas.width / bufferLength;
                     let x = 0;
