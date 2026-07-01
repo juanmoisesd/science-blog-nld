@@ -465,6 +465,7 @@
             <p style="margin-bottom: 4px;"><strong>Puente más activo:</strong> <span id="stat-path" style="color: var(--accent);">N/A</span></p>
             <p style="margin-bottom: 4px;"><strong>Población aislada:</strong> <span id="stat-unreached" style="color: var(--accent);">800</span></p>
             <p style="margin-bottom: 4px;"><strong>Tamaño máximo:</strong> <span id="stat-max-size" style="color: var(--accent);">0</span></p>
+            <p style="margin-bottom: 4px; border-top: 1px solid var(--border); pt: 4px; mt: 4px;"><strong>Impacto Hubs:</strong> <span id="stat-hubs-impact" style="color: var(--accent);">0%</span> del alcance total</p>
         </div>
     </div>
 
@@ -474,27 +475,226 @@
 </aside>
 
 <div id="modal">
-    <div class="modal-content">
-        <h2 style="font-size: 1.8rem; margin-bottom: 20px; color: var(--accent);">Manual de Epidemiología Social</h2>
-        <div style="line-height: 1.7; font-size: 0.95rem;">
-            <p>Bienvenido a <strong>SOCIODYNAMICS</strong>. Esta plataforma es una herramienta de <em>diseminación científica</em> diseñada para explorar la sociodinámica de la información en redes complejas.</p>
+    <div class="modal-content" style="max-width: 1000px;">
+        <h2 style="font-size: 2.2rem; margin-bottom: 30px; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px;">TRATADO SOBRE LA DINÁMICA DE LA INFORMACIÓN Y NEUROPLASTICIDAD SOCIAL</h2>
+        <div style="line-height: 1.8; font-size: 1rem; text-align: justify; color: #e2e8f0;">
 
-            <h3 style="margin-top: 25px; color: var(--s-received);">1. Modelos Epidemiológicos Sociales</h3>
-            <p>La simulación adapta modelos SIR (Susceptible, Infectado, Recuperado) a la información. Aquí, un individuo "susceptible" es alguien **no informado**, el "infectado" es quien **comparte activamente** y el "recuperado" es quien ha perdido interés (**saturado**).</p>
+            <p style="margin-bottom: 20px;">Bienvenido a <strong>SOCIODYNAMICS 2.0</strong>. Esta aplicación no es simplemente un juego visual, sino un simulador basado en agentes (ABM - Agent-Based Modeling) diseñado para la alta divulgación científica en áreas de la sociología computacional, la epidemiología social y la neurobiología del comportamiento. Bajo la dirección conceptual del Dr. Juan Moisés de la Serna, exploramos cómo la información no solo viaja a través de cables o señales, sino que se infiltra en el tejido mismo de la plasticidad neuronal y la epigenética conductual.</p>
 
-            <h3 style="margin-top: 25px; color: var(--accent);">2. Cámaras de Eco y Algoritmos</h3>
-            <p>El **Algoritmo de Recomendación** simula el filtrado que realizan las redes sociales modernas. Un valor alto crea "cámaras de eco", donde la información solo circula entre individuos con ideas similares, reforzando prejuicios y dificultando la entrada de desmentidos o noticias contrastadas.</p>
+            <h3 style="color: var(--accent); margin-top: 40px; font-size: 1.5rem;">I. Fundamentos de la Difusión de Innovaciones y Rumores</h3>
+            <p>La difusión de cualquier entidad informacional —sea una innovación tecnológica, un rumor malintencionado o una noticia científica verificada— sigue patrones que han sido estudiados extensamente por figuras como Everett Rogers. En este simulador, implementamos las categorías de adoptantes (innovadores, adoptantes tempranos, mayoría temprana, mayoría tardía y rezagados) a través de los perfiles psicográficos de nuestros agentes.</p>
+            <p>Cada individuo posee un <strong>Umbral de Adopción</strong> único. Según la teoría de Granovetter sobre la fuerza de los vínculos débiles, los individuos que actúan como "puentes" entre comunidades (aquellos con conexiones que saltan de un grupo a otro) son críticos para evitar que una información se quede estancada en una cámara de eco local. En la visualización "Red Estándar", estos puentes se iluminan cuando facilitan el salto de la información entre clusters aislados.</p>
 
-            <h3 style="margin-top: 25px; color: var(--s-verifier);">3. El Papel del Pensamiento Crítico</h3>
-            <p>El pensamiento crítico actúa como un sistema inmunitario social. Los **verificadores** (verde) introducen un retraso necesario para contrastar fuentes, mientras que los **desmentidores** (morado) compiten activamente contra la desinformación, intentando "curar" a los infectados por rumores o noticias falsas.</p>
+            <h3 style="color: var(--s-received); margin-top: 40px; font-size: 1.5rem;">II. Modelado SIR Adaptado a la Sociodinámica</h3>
+            <p>Utilizamos una adaptación del modelo SIR (Susceptible, Infectado, Recuperado). En nuestra arquitectura:</p>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li><strong>S (Susceptible):</strong> Agentes de color gris que aún no han sido expuestos al mensaje.</li>
+                <li><strong>I (Infectado/Activo):</strong> Agentes de color rojo que han procesado la información y han decidido, según su nivel de curiosidad e influencia, compartirla con su red de contactos.</li>
+                <li><strong>R (Recuperado/Saturado):</strong> Agentes de color azul que han alcanzado la "fatiga informativa". Ya no comparten el mensaje porque su valor de novedad ha decaído o porque la repetición constante ha generado una inhibición latente.</li>
+            </ul>
+            <p>La <strong>Fatiga Informativa</strong> es un parámetro crucial. En un entorno sobresaturado, la probabilidad de que un agente pase de "Activo" a "Saturado" aumenta exponencialmente con el número de veces que recibe la misma información de distintas fuentes, un fenómeno que emula el "ruido cognitivo" de las redes sociales contemporáneas.</p>
 
-            <h3 style="margin-top: 25px; color: var(--s-active);">4. Viralidad vs. Adopción</h3>
-            <p>Los **Rumores** y **Memes** explotan sesgos cognitivos rápidos (Sistema 1 de Kahneman), logrando picos de viralidad inmensos pero efímeros. Las **Innovaciones**, en cambio, requieren una evaluación de coste-beneficio (Sistema 2), propagándose más lentamente pero logrando una mayor estabilidad estructural en la red.</p>
+            <h3 style="color: var(--s-verifier); margin-top: 40px; font-size: 1.5rem;">III. El Sistema Inmunitario Social: Verificadores y Desmentidores</h3>
+            <p>Frente a la propagación de <em>Fake News</em> o desinformación, la sociedad desarrolla mecanismos de defensa. Los <strong>Verificadores</strong> (nodos verdes) son individuos con altos índices de pensamiento crítico y nivel educativo. Su función es introducir una latencia en la transmisión: no comparten de inmediato, sino que contrastan la información. Si el mensaje es identificado como falso, estos agentes pueden transformarse en <strong>Desmentidores</strong> (nodos morados).</p>
+            <p>Los desmentidores compiten en el mismo espacio topológico que el rumor original. Esta es una lucha por el "espacio mental" o nicho cognitivo. En la simulación, observará cómo las ondas moradas intentan neutralizar las ondas rojas, ilustrando la teoría de la inoculación cognitiva, donde la exposición a una forma debilitada de desinformación (el desmentido) ayuda a los individuos a resistir futuros ataques informativos.</p>
 
-            <h3 style="margin-top: 25px; color: var(--accent);">5. Topología de Red: Puentes y Hubs</h3>
-            <p>No todos los individuos influyen igual. Los **Líderes de Opinión** (Hubs) son esenciales por su número de conexiones, pero los "Puentes" entre comunidades aisladas son los que permiten que una noticia local se convierta en un fenómeno global.</p>
+            <h3 style="color: var(--accent); margin-top: 40px; font-size: 1.5rem;">IV. Neuroplasticidad y Epigenética Conductual</h3>
+            <p>Desde la perspectiva del Dr. Juan Moisés de la Serna, la exposición prolongada a ciertos tipos de flujo informativo puede alterar la plasticidad sináptica. Los agentes en este simulador poseen un atributo de <strong>Memoria</strong>. Una alta memoria significa que el agente recuerda si una fuente fue fiable en el pasado, lo que altera su probabilidad de creer futuros mensajes de esa misma rama de la red.</p>
+            <p>La <strong>Epigenética Conductual</strong> sugiere que el entorno social puede dejar "marcas" en la forma en que los individuos responden al estrés informativo. En el simulador, esto se traduce en cómo la estructura de la red (si es muy densa o dispersa) altera la predisposición de los agentes a la viralidad. Las redes con alto <em>Clustering</em> tienden a generar micro-entornos de alta presión social donde la disidencia (el pensamiento crítico) es más difícil de mantener.</p>
 
-            <button onclick="document.getElementById('modal').style.display='none'" class="primary" style="margin-top: 30px;">Comprendido, iniciar experimentación</button>
+            <h3 style="color: var(--accent); margin-top: 40px; font-size: 1.5rem;">V. Algoritmos de Recomendación y Cámaras de Eco</h3>
+            <p>El simulador permite ajustar el <strong>Algoritmo de Recomendación</strong>. En redes sociales modernas, estos algoritmos priorizan la conexión entre personas con intereses similares. Esto crea "Cámaras de Eco" (Echo Chambers). Visualmente, esto se observa cuando la información rebota constantemente dentro de una misma comunidad, volviéndose viral internamente pero siendo incapaz de penetrar en otros grupos.</p>
+            <p>Un valor de algoritmo del 100% significa que los agentes solo interactúan con miembros de su propio cluster, eliminando la diversidad informativa y facilitando la radicalización de la información. Por el contrario, una red abierta (0% de algoritmo) permite una difusión más homogénea pero también más lenta de noticias especializadas.</p>
+
+            <h3 style="color: var(--accent); margin-top: 40px; font-size: 1.5rem;">VI. Líderes de Opinión y Superdifusores (Hubs)</h3>
+            <p>La teoría de los "Dos Pasos de la Comunicación" de Lazarsfeld postula que la información fluye de los medios a los líderes de opinión, y de estos al resto de la población. En nuestra simulación, los <strong>Líderes de Opinión</strong> son nodos de mayor tamaño y con un halo luminoso. Su <strong>Nivel de Influencia</strong> es significativamente mayor que el del agente promedio.</p>
+            <p>Un solo "Superdifusor" puede cambiar el destino de una noticia. Si un líder de opinión se convierte en verificador, puede frenar en seco un rumor que de otro modo hubiera alcanzado a toda la población. La importancia de estos nodos radica en su centralidad de grado (número de contactos) y su centralidad de intermediación (capacidad de controlar el flujo entre grupos).</p>
+
+            <h3 style="color: var(--accent); margin-top: 40px; font-size: 1.5rem;">VII. Tipología de la Información</h3>
+            <p>No todos los contenidos se comportan igual ante la psicología humana:</p>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li><strong>Rumores:</strong> Apelan al Sistema 1 de Kahneman (pensamiento rápido, emocional). Tienen alta probabilidad de contagio inicial pero mueren rápido si no se renuevan.</li>
+                <li><strong>Noticias Científicas:</strong> Requieren el Sistema 2 (pensamiento lento, analítico). Su difusión es más laboriosa pero su permanencia en la memoria de la red es superior.</li>
+                <li><strong>Innovaciones:</strong> Su adopción depende del <em>Beneficio Percibido</em>. Si el agente no percibe una utilidad clara, el contagio se detiene, independientemente de cuántos amigos la usen.</li>
+                <li><strong>Memes:</strong> Son los virus perfectos de la mente. Poseen una viralidad explosiva que ignora barreras de comunidad, pero su persistencia es casi nula.</li>
+            </ul>
+
+            <h3 style="color: var(--accent); margin-top: 40px; font-size: 1.5rem;">VIII. Conclusión del Modelo</h3>
+            <p>A través de esta simulación, invitamos al usuario a realizar experimentos controlados. ¿Qué ocurre si aumentamos el pensamiento crítico en un 10%? ¿Cómo afecta la presencia de verificadores a la vida media de una noticia falsa? La comprensión de estos fenómenos es vital para navegar en la actual era de la "Infodemia", donde la salud de nuestro ecosistema informativo depende de la responsabilidad individual y la arquitectura de las plataformas que habitamos.</p>
+
+            <h2 style="font-size: 2rem; margin-top: 60px; color: var(--accent); border-top: 2px solid var(--border); pt: 20px;">TRATADO SOBRE LA PSICOLOGÍA DEL COMPORTAMIENTO SOCIAL</h2>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Introducción a la Psicología de las Masas</h3>
+            <p>La psicología de las masas es un área fundamental para comprender los fenómenos de contagio social que se visualizan en SOCIODYNAMICS. Desde los trabajos pioneros de Gustave Le Bon en el siglo XIX hasta las teorías modernas de la identidad social de Tajfel y Turner, hemos aprendido que los individuos, al formar parte de un grupo o de una red densa, tienden a desdibujar su individualidad en favor de una identidad colectiva.</p>
+            <p>En nuestra simulación, esto se manifiesta a través de la cohesión comunitaria. Cuando un agente se encuentra dentro de un cluster con alto <em>Clustering</em>, su comportamiento está fuertemente mediado por lo que percibe como la norma del grupo. Si la norma es la desconfianza hacia las instituciones, cualquier información que alimente esa desconfianza (como una <em>Fake News</em>) será aceptada con una resistencia mínima, independientemente de la educación formal del agente.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">El Efecto de la Desindividualización</h3>
+            <p>En el entorno digital de las redes sociales, el anonimato o la mediación tecnológica facilitan la desindividualización. Este estado psicológico reduce la autoconciencia y la evaluación crítica del propio comportamiento, permitiendo que las emociones (especialmente la indignación) se propaguen con una velocidad inusual. Visualmente, esto se representa mediante la propagación explosiva de los "Memes" y los "Rumores", que saturan la red antes de que los mecanismos de control ejecutivo de los agentes (los verificadores) puedan activarse.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Disonancia Cognitiva y Preservación del Ego</h3>
+            <p>Cuando un agente recibe una noticia que contradice sus creencias fundamentales, experimenta disonancia cognitiva. Para reducir este malestar, el cerebro humano prefiere ignorar la evidencia o atacar al emisor antes que cambiar de opinión. En el simulador, esto se implementa mediante la variable "Confianza en la Fuente". Si la fuente es parte de su comunidad, la disonancia es menor porque se confía en el criterio del grupo. Si la fuente es externa o un "Desmentidor", el agente activará mecanismos de defensa psicológica que bloquean la absorción del mensaje.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">La Teoría de la Inoculación</h3>
+            <p>William McGuire propuso que, al igual que una vacuna biológica, es posible "inocular" a las personas contra la persuasión malintencionada exponiéndolas a argumentos débiles que luego son refutados. En SOCIODYNAMICS, el papel de los Desmentidores es precisamente este. Al propagar correcciones, no solo intentan curar a los ya infectados, sino que actúan como un factor de inmunización para los nodos susceptibles, elevando su umbral de resistencia ante futuros ataques de la misma naturaleza.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Análisis de la Viralidad Emocional</h3>
+            <p>Las investigaciones en psicología de la comunicación demuestran que las emociones de "alta activación" (ira, miedo, asombro) son las que más favorecen el acto de compartir. Por el contrario, emociones de "baja activación" (tristeza, serenidad) tienden a frenar la comunicación. Nuestra simulación utiliza estos hallazgos para diferenciar la velocidad de los Rumores frente a las Campañas Sanitarias. Los rumores suelen diseñarse para disparar la amígdala, garantizando una ventaja competitiva inicial sobre la información racional.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Influencia de la Edad y el Nivel Educativo</h3>
+            <p>Los estudios demográficos sugieren que la vulnerabilidad ante la desinformación varía con la edad. Los individuos más jóvenes suelen poseer una mayor alfabetización digital pero una menor resistencia ante la presión del grupo de iguales. Por otro lado, individuos de edad avanzada pueden tener una mayor confianza en fuentes tradicionales, lo que los hace vulnerables a cadenas de WhatsApp si estas parecen provenir de fuentes familiares. El simulador asigna perfiles de "Edad" y "Educación" que modulan el Pensamiento Crítico dinámicamente, permitiendo observar cómo distintas cohortes poblacionales reaccionan ante un mismo evento informativo.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Comunidades de Práctica y Aprendizaje Social</h3>
+            <p>La teoría del aprendizaje social de Albert Bandura destaca que aprendemos observando a los demás. En nuestra red, esto se traduce en que la adopción de una innovación tecnológica no es un acto puramente racional-económico, sino una imitación social. Si los "Líderes de Opinión" de una comunidad adoptan una herramienta, el resto la seguirá no necesariamente por su beneficio intrínseco, sino por el valor social de estar alineado con el liderazgo. Este comportamiento es vital para entender por qué ciertas tecnologías triunfan a pesar de ser técnicamente inferiores a sus competidoras.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Persuasión y el Modelo de Probabilidad de Elaboración</h3>
+            <p>El modelo ELM (Elaboration Likelihood Model) sugiere que hay dos rutas para la persuasión: la ruta central (análisis profundo) y la ruta periférica (señales superficiales como el atractivo del emisor o la cantidad de likes). SOCIODYNAMICS emula esto mediante la interacción entre Influencia del Emisor (ruta periférica) y Pensamiento Crítico del Receptor (ruta central). En un entorno de fatiga informativa, la ruta central se colapsa, dejando a la población a merced de los mecanismos de persuasión periférica más simples.</p>
+
+            <h2 style="font-size: 2rem; margin-top: 60px; color: var(--accent); border-top: 2px solid var(--border); pt: 20px;">APÉNDICE CIENTÍFICO: TRATADO EXTENSO DE NEUROPLASTICIDAD Y EPIGENÉTICA SOCIAL</h2>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Capítulo 1: La Epigenética del Comportamiento Colectivo</h3>
+            <p>La epigenética conductual es un campo de estudio que examina cómo las señales ambientales pueden causar cambios químicos en el ADN que, a su vez, afectan la expresión de los genes sin alterar la secuencia genética subyacente. En el contexto de la simulación de redes sociales, este concepto se traslada a la noción de que la arquitectura de la red (nuestro "ambiente social") puede alterar la predisposición conductual de los individuos (nuestra "expresión genético-conductual").</p>
+            <p>Cuando un agente en nuestra red se encuentra rodeado de una mayoría de contactos que comparten una misma información sesgada, se produce un fenómeno de presión selectiva. Esta presión no solo altera la decisión inmediata de compartir, sino que, a largo plazo, "silencia" las vías de pensamiento crítico (metilación simbólica del pensamiento analítico). Los estudios del Dr. Juan Moisés de la Serna sugieren que la plasticidad cerebral no es un fenómeno puramente biológico aislado, sino que se ve moldeado por la interacción constante con estímulos informacionales de alta carga emocional.</p>
+            <p>En nuestra simulación, el atributo "Confianza en la fuente" actúa como un marcador epigenético. A medida que un agente recibe información confirmatoria de fuentes en las que confía, su umbral para aceptar información contradictoria se eleva, endureciendo su resistencia cognitiva. Este proceso es reversible en entornos de alta diversidad informativa, lo que subraya la importancia de mantener redes heterogéneas para preservar la salud cognitiva de la población.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Capítulo 2: Neuroplasticidad y la Red de Modo Predeterminado (DMN)</h3>
+            <p>La neuroplasticidad es la capacidad del sistema nervioso para cambiar su estructura y su funcionamiento a lo largo de su vida, como reacción a la diversidad del entorno. En el ámbito de las redes sociales, la exposición repetida a fragmentos cortos de información (memes, micro-noticias) tiende a fortalecer las vías neuronales asociadas con el procesamiento rápido y heurístico (Sistema 1), en detrimento de las redes neuronales implicadas en el razonamiento profundo y sostenido.</p>
+            <p>La Red de Modo Predeterminado (Default Mode Network) del cerebro se activa cuando no estamos enfocados en una tarea externa. Es aquí donde ocurre la autorreflexión y el procesamiento de la información social. Las redes sociales modernas, al proporcionar un flujo incesante de estímulos, impiden que la DMN realice su función de consolidación crítica. En el simulador, esto se representa mediante la variable "Fatiga Informativa". Un exceso de fatiga no solo detiene la difusión, sino que degrada la capacidad del agente para diferenciar entre un rumor y una noticia verificada.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Capítulo 3: Teoría de Redes Complejas y Topología de la Influencia</h3>
+            <p>La ciencia de redes nos proporciona las herramientas matemáticas para comprender la estructura subyacente de la sociedad. Una red social no es un grafo aleatorio (Erdős-Rényi), sino una red de "Mundo Pequeño" (Small World) con propiedades de invarianza de escala (Scale-Free). Esto significa que la mayoría de los individuos tienen pocos contactos, mientras que unos pocos "hubs" (Superdifusores) tienen una conectividad masiva.</p>
+            <p>La centralidad de un nodo en nuestra simulación determina su capacidad para actuar como catalizador o como barrera. La <strong>Centralidad de Intermediación</strong> (Betweenness Centrality) identifica a aquellos agentes que actúan como puentes entre comunidades aisladas. Si un desmentido logra capturar a un nodo con alta intermediación, su potencial para frenar una epidemia informacional es órdenes de magnitud superior al de un nodo periférico. Por ello, en el modo de visualización "Mapa de Calor", se puede observar cómo los focos de calor informacional tienden a gravitar alrededor de estos nodos estructuralmente vitales.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Capítulo 4: Modelos de Umbral y Cascadas de Información</h3>
+            <p>El modelo de umbral de Granovetter postula que un individuo decide unirse a una acción colectiva (o compartir una noticia) basándose en el número de sus contactos que ya lo han hecho. Este es un fenómeno de "Prueba Social". En la simulación, hemos implementado una curva de adopción logística. Si un agente ve que el 70% de sus amigos comparte un rumor, su pensamiento crítico se ve abrumado por el deseo de pertenencia y cohesión social.</p>
+            <p>Las <strong>Cascadas de Información</strong> ocurren cuando los individuos ignoran sus propias señales privadas (su propio conocimiento de que algo es falso) a favor de seguir la señal pública enviada por los demás. Este proceso es el motor principal de las <em>Fake News</em>. La única forma de romper una cascada es mediante la intervención de "Líderes de Opinión" que posean una credibilidad externa lo suficientemente alta como para contrarrestar la inercia de la masa.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Capítulo 5: El Rol del Pensamiento Crítico como Filtro Biológico</h3>
+            <p>El pensamiento crítico no es solo una habilidad educativa, sino un proceso biológico que consume energía metabólica significativa. Según la teoría del cerebro energético, el cerebro busca constantemente ahorrar energía mediante el uso de atajos mentales. Verificar una noticia (nodos verdes en el simulador) requiere activar la corteza prefrontal dorsolateral, una región responsable de las funciones ejecutivas y el control inhibitorio.</p>
+            <p>En situaciones de estrés o alta carga emocional (típicas de los rumores de crisis), el cerebro tiende a "desactivar" estos filtros costosos en favor de respuestas rápidas de la amígdala. Por esta razón, los rumores se propagan más rápido que las noticias científicas. En SOCIODYNAMICS, el parámetro "Pensamiento Crítico" global representa la inversión que una sociedad hace en educación y salud mental para fortalecer estos filtros prefrontales frente al ruido informativo.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Capítulo 6: Dinámica de la Desinformación y Estrategias de Mitigación</h3>
+            <p>La desinformación no es simplemente información errónea; es información diseñada para explotar los sesgos cognitivos. El "Sesgo de Confirmación" es el más potente de todos: tendemos a creer lo que ya coincide con nuestras creencias previas. Los algoritmos de recomendación modernos actúan como amplificadores de este sesgo, creando silos informativos.</p>
+            <p>Para mitigar esto, nuestra simulación permite lanzar eventos de "Campaña Institucional" y "Medios Verificados". Estas intervenciones intentan reinyectar diversidad en el sistema. Sin embargo, como se puede observar en la simulación, una vez que un rumor ha alcanzado una "Masa Crítica", es extremadamente difícil de erradicar por completo, dejando siempre un residuo de agentes "infectados" o permanentemente desconfiados.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Capítulo 7: Sociología de la Innovación y Resistencia al Cambio</h3>
+            <p>La adopción de innovaciones tecnológicas (modo "Innovación") difiere de la difusión de rumores en que requiere una evaluación de utilidad. No basta con que sea popular; debe ser útil. Aquí, el atributo "Percepción de Beneficio" es clave. Muchos agentes pueden estar informados sobre una nueva tecnología pero deciden no adoptarla porque el coste de cambiar su hábito actual es superior al beneficio percibido.</p>
+            <p>Este capítulo analiza cómo los innovadores (el primer 2.5% de la población) deben convencer a los adoptantes tempranos para superar el "Abismo de Moore". En el simulador, si una innovación no logra cruzar este abismo rápidamente, la fatiga informativa la hará desaparecer antes de que alcance la mayoría temprana, ilustrando por qué tantos avances tecnológicos prometedores fracasan en el mercado social.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Capítulo 8: Perspectivas Futuras en la Comunicación Humana</h3>
+            <p>Hacia el final de esta exploración, debemos considerar el impacto de la Inteligencia Artificial en estos flujos. Los bots y los sistemas automatizados pueden actuar como superdifusores artificiales, alterando la dinámica orgánica de la red. SOCIODYNAMICS sirve como un recordatorio de que, a pesar de la tecnología, las leyes fundamentales del contagio social siguen ancladas en nuestra biología evolutiva y nuestra necesidad de conexión y validación grupal.</p>
+
+            <h2 style="font-size: 2rem; margin-top: 60px; color: var(--accent); border-top: 2px solid var(--border); pt: 20px;">MANUAL TÉCNICO Y OPERATIVO DE LA SIMULACIÓN</h2>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Descripción de las Variables del Panel de Control</h3>
+            <p>Para una experimentación científica rigurosa, es esencial comprender cómo cada variable del panel lateral afecta la micro-mecánica de los agentes:</p>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li><strong>Población:</strong> Determina la escala del sistema. Una mayor población permite observar patrones estadísticos más estables, pero requiere mayor potencia de procesamiento.</li>
+                <li><strong>Conectividad:</strong> Representa el número promedio de amigos. En términos de redes, es el "Grado" del nodo. Redes muy conectadas favorecen la viralidad instantánea.</li>
+                <li><strong>Clustering (Comunidades):</strong> Define la probabilidad de que los amigos de un agente sean amigos entre sí. Un clustering alto crea burbujas cerradas.</li>
+                <li><strong>Algoritmo de Recomendación:</strong> Modula el sesgo de selección. Al 100%, el algoritmo impide que la información cruce los límites de la comunidad de origen.</li>
+                <li><strong>Pensamiento Crítico:</strong> Es la probabilidad base de que un agente verifique la información antes de creerla.</li>
+                <li><strong>Velocidad de Simulación:</strong> Permite acelerar el tiempo para observar estados finales o ralentizarlo para analizar la física de las ondas.</li>
+                <li><strong>Probabilidad de Compartir:</strong> La disposición emocional a difundir el mensaje recibido.</li>
+                <li><strong>Probabilidad de Verificar:</strong> La disposición analítica a contrastar el mensaje con fuentes externas.</li>
+                <li><strong>Fatiga Informativa:</strong> La velocidad a la que un agente pierde interés en el mensaje.</li>
+                <li><strong>Influencia de Líderes:</strong> El multiplicador de efectividad que poseen los hubs sobre sus seguidores.</li>
+                <li><strong>Superdifusores (Hubs):</strong> El número de nodos con conectividad excepcional que se inyectan en la red.</li>
+            </ul>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Uso de Modos de Visualización</h3>
+            <p>El simulador ofrece tres capas visuales para diferentes tipos de análisis:</p>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li><strong>Red Estándar:</strong> Ideal para observar la física de Verlet y cómo los nodos se agrupan orgánicamente. Permite ver la arquitectura "Small World".</li>
+                <li><strong>Mapa de Calor:</strong> Útil para identificar zonas de saturación informativa. Las áreas rojas indican una alta densidad de agentes compartiendo activamente.</li>
+                <li><strong>Árbol de Transmisión:</strong> Una visualización abstracta que oculta las conexiones no utilizadas, revelando únicamente la "Ruta Crítica" que ha seguido la información desde el primer infectado.</li>
+            </ul>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Eventos de Intervención Directa</h3>
+            <p>Como investigador, usted puede intervenir en tiempo real:</p>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li><strong>Desmentido:</strong> Convierte a los verificadores en agentes activos contra la noticia actual, iniciando una onda morada de neutralización.</li>
+                <li><strong>Influencer:</strong> Crea un nuevo superdifusor en una posición aleatoria, lo que puede salvar una noticia que está a punto de morir.</li>
+                <li><strong>Bloqueo:</strong> Identifica a los 10 agentes más activos y desactiva su cuenta, simulando una moderación de plataforma.</li>
+                <li><strong>Campaña:</strong> Inyecta un gran número de verificadores en la red para aumentar la resistencia general a la desinformación.</li>
+                <li><strong>Medios:</strong> Representa una intervención de televisión o prensa tradicional que informa a una gran masa de individuos de forma simultánea.</li>
+                <li><strong>Censura:</strong> Elimina aleatoriamente a la mitad de los agentes compartiendo, lo que a menudo produce un efecto rebote si la red es resiliente.</li>
+            </ul>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Análisis Profundo de los Modos de Simulación</h3>
+            <p>Cada modo de simulación preconfigurado en el selector "Tipo de Mensaje" altera las reglas fundamentales de interacción entre los agentes:</p>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li><strong>Rumor (Emocional, Viral):</strong> Configurado con una alta probabilidad base de contagio pero una baja persistencia. El rumor necesita infectar nuevos nodos constantemente para sobrevivir. Si la velocidad de infección cae por debajo del umbral crítico, el rumor desaparece. Es el modelo perfecto para estudiar la "Vida Media" de una información efímera.</li>
+                <li><strong>Noticia Científica / Verificada:</strong> Posee una probabilidad de contagio menor debido a su complejidad cognitiva, pero una persistencia muy alta. Una vez que un agente cree en una noticia científica, es difícil que pierda el interés. Este modo demuestra cómo la calidad de la información puede compensar su menor velocidad de propagación.</li>
+                <li><strong>Fake News (Desinformación):</strong> Combina la alta viralidad del rumor con una persistencia moderada. Está diseñada para ser "pegajosa". En este modo, la probabilidad de que un verificador detecte el engaño es vital. Si el porcentaje de verificadores es bajo, la desinformación puede colonizar toda la red en un tiempo récord.</li>
+                <li><strong>Innovación Tecnológica:</strong> Implementa un modelo de adopción condicional. El contagio no es automático al recibir la información; el agente evalúa su propio atributo de "Percepción de Beneficio". Esto crea un patrón de difusión más lento y estructurado, donde los "adoptantes tempranos" juegan un papel de validación crucial.</li>
+                <li><strong>Campaña Sanitaria:</strong> Simula información oficial con alta credibilidad pero baja carga emocional. Su éxito depende de la confianza institucional inyectada en la red. Es útil para estudiar cómo las autoridades pueden competir contra rumores durante crisis de salud pública.</li>
+                <li><strong>Cadena de WhatsApp:</strong> Maximiza el efecto del <em>Clustering</em>. Las cadenas se mueven por vínculos fuertes (familia, amigos cercanos). Esto genera burbujas de altísima intensidad informativa que son difíciles de penetrar por desmentidos externos.</li>
+                <li><strong>Televisión Tradicional:</strong> Representa un modelo de comunicación unidireccional (One-to-Many). Al iniciar, infecta a un gran porcentaje de la población de forma aleatoria, sin importar la topología de la red. Es un experimento sobre el poder de los medios masivos para establecer la agenda (Agenda-Setting).</li>
+                <li><strong>Meme (Viralidad Explosiva):</strong> Posee los parámetros más extremos de contagio. Ignora casi por completo el pensamiento crítico y la fatiga inicial. Sin embargo, su persistencia es la más baja de todo el sistema, desapareciendo casi tan rápido como apareció.</li>
+            </ul>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Evolución Histórica de la Teoría de Redes</h3>
+            <p>Para situar esta simulación en su contexto académico, es importante repasar los hitos de la ciencia de redes que han informado nuestra lógica de programación:</p>
+            <p><strong>1. El Experimento de los Seis Grados de Separación:</strong> Stanley Milgram, en 1967, envió cartas a personas aleatorias en Nebraska pidiéndoles que las hicieran llegar a un destinatario en Massachusetts a través de conocidos. El resultado (un promedio de 6 saltos) demostró que el mundo es mucho más pequeño de lo que parece. En SOCIODYNAMICS, esto se observa en cómo un rumor puede cruzar toda la red en pocos pasos si encuentra los "puentes" adecuados.</p>
+            <p><strong>2. Redes de Mundo Pequeño (Watts y Strogatz):</strong> En 1998, estos investigadores propusieron un modelo que explica cómo redes con alta cohesión local pueden tener distancias globales cortas si se añaden unos pocos vínculos aleatorios. Nuestra generación de red utiliza este principio para crear comunidades que, sin embargo, están conectadas globalmente.</p>
+            <p><strong>3. Redes Libres de Escala (Barabási y Albert):</strong> Descubrieron que redes como Internet o las redes sociales reales crecen mediante el "Apego Preferencial" (el que tiene más conexiones recibe más conexiones). Esto crea los Hubs. El panel de control permite ajustar el número de estos hubs, permitiéndole ver cómo la estabilidad de la red depende de estos pocos nodos masivamente conectados.</p>
+            <p><strong>4. La Fuerza de los Vínculos Débiles (Granovetter):</strong> Este concepto revolucionó la sociología al demostrar que para encontrar trabajo o difundir noticias nuevas, nuestros conocidos lejanos (vínculos débiles) son más importantes que nuestros amigos íntimos (vínculos fuertes), ya que los primeros nos conectan con información que aún no circula en nuestro círculo cercano.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Interpretación de las Estadísticas y Análisis de Datos</h3>
+            <p>El panel inferior proporciona datos en tiempo real para el análisis comparativo. El "Tiempo necesario para alcanzar el X%" (T25, T50, etc.) es el indicador más preciso de la viralidad. Una noticia científica rara vez alcanza el T90, mientras que un rumor bien diseñado puede lograrlo en pocos cientos de ticks. La comparación entre la Instancia A y la Instancia B permite aislar variables (por ejemplo, mantener la misma red pero cambiar el pensamiento crítico) para entender relaciones de causalidad pura.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">X. Estudios de Caso en Sociodinámica Moderna</h3>
+            <p>Para comprender la aplicación práctica de estos modelos, analizamos dos escenarios históricos que pueden ser replicados en SOCIODYNAMICS:</p>
+            <p><strong>Escenario 1: La Infodemia de la Gripe Española vs. COVID-19.</strong> En 1918, la información se propagaba por medios físicos (periódicos, boca a boca). El modelo de red era disperso y la velocidad de propagación era lenta (bajo T25). Sin embargo, en 2020, la estructura de red globalizada y altamente conectada permitió que la desinformación sobre tratamientos milagrosos alcanzara el T90 en días. Utilice el modo "Cadena de WhatsApp" con alta conectividad para observar cómo la rapidez del medio desborda los mecanismos institucionales de verificación.</p>
+            <p><strong>Escenario 2: Polarización Política en Elecciones Digitales.</strong> La creación de "cámaras de eco" mediante algoritmos de recomendación (ponga el slider al 90%) demuestra cómo una población puede dividirse en dos bloques que nunca interactúan. Esto genera una "Resiliencia al Desmentido" casi total, ya que los agentes de un bloque rechazan sistemáticamente la información que proviene del otro, considerándola propaganda o ataque externo. Es el modelo perfecto para entender por qué los hechos objetivos pierden peso frente a las narrativas grupales.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XI. Glosario de Términos Avanzados</h3>
+            <ul style="margin-left: 20px; margin-bottom: 20px; line-height: 1.8;">
+                <li><strong>Centralidad de Grado:</strong> El número de conexiones directas de un agente. Define quiénes son los hubs naturales del sistema.</li>
+                <li><strong>Cascada de Información:</strong> Proceso donde la observación del comportamiento ajeno domina sobre el juicio propio, llevando a una adopción masiva.</li>
+                <li><strong>Inhibición Latente:</strong> Mecanismo psicológico que reduce la atención a estímulos conocidos, representado en el simulador como parte de la Fatiga Informativa.</li>
+                <li><strong>Metilación del Pensamiento:</strong> Metáfora epigenética para describir la reducción de la plasticidad cognitiva ante la exposición repetida a dogmas.</li>
+                <li><strong>Masa Crítica:</strong> El punto de inflexión en el que una innovación o rumor se vuelve auto-sostenible y no requiere de impulsores externos para saturar la red.</li>
+                <li><strong>Resiliencia de Red:</strong> Capacidad de la estructura social para mantener su integridad informativa a pesar de la eliminación o censura de sus nodos más influyentes.</li>
+                <li><strong>Diferencial de Viralidad:</strong> La diferencia de velocidad entre la propagación de una noticia falsa (rápida) y su desmentido (lento).</li>
+                <li><strong>Topología Small-World:</strong> Estructura donde la mayoría de los nodos no son vecinos pero pueden alcanzarse en pocos saltos.</li>
+                <li><strong>Sesgo de Confirmación:</strong> Tendencia neurocognitiva a procesar preferencialmente la información que valida preconceptos existentes.</li>
+            </ul>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XII. Reflexiones sobre la Redes de Confianza y Capital Social</h3>
+            <p>El capital social se refiere a las redes de relaciones entre personas que viven y trabajan en una sociedad particular, permitiendo que esa sociedad funcione con eficacia. En SOCIODYNAMICS, el capital social está representado por la densidad de la red y la calidad de los vínculos. Las redes con alto capital social suelen tener una mayor capacidad de auto-regulación frente a la desinformación, ya que los agentes confían en los procesos de verificación de sus pares.</p>
+            <p>Sin embargo, un exceso de capital social dentro de un grupo cerrado puede llevar al sectarismo. Es el equilibrio entre los vínculos fuertes (cohesión) y los vínculos débiles (apertura) lo que garantiza un ecosistema informativo sano. Los experimentos realizados con este simulador sugieren que la figura del "Puente Informativo" es el activo más valioso de cualquier red, ya que es el único capaz de romper la hegemonía de una narrativa errónea antes de que esta se convierta en dogma.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XIII. El Futuro de la Verificación Distribuida</h3>
+            <p>Mirando hacia adelante, el modelo de Verificadores Centralizados (como los medios tradicionales) está dando paso a modelos de verificación distribuida o comunitaria. En la simulación, esto se puede probar aumentando el porcentaje de verificadores base en lugar de depender de eventos de "Medios". El resultado suele ser una red mucho más robusta y menos propensa a cascadas de información catastróficas, aunque con una velocidad de difusión global algo más lenta. Este es el compromiso fundamental de la sociedad de la información: rapidez frente a precisión.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XIV. Dinámica de la Persuasión en Redes</h3>
+            <p>La persuasión no es un proceso lineal, sino una interacción compleja entre la fuente, el mensaje y el receptor. Según el modelo de Hovland-Yale, factores como la experiencia percibida de la fuente y su atractivo social son determinantes. En SOCIODYNAMICS, la variable "Influencia de Líderes" captura esta esencia. Un líder de opinión no convence por la fuerza de sus argumentos lógicos (ruta central), sino por su posición de prestigio dentro de la red (ruta periférica).</p>
+            <p>Este capítulo analiza cómo los mensajes emocionales (Rumores) logran puentear las defensas racionales de los agentes. La emoción actúa como un lubricante social que reduce la fricción de la verificación. Al estudiar las cascadas de información, observamos que una vez que un número suficiente de agentes ha adoptado una postura, la presión para conformarse se vuelve casi irresistible para los individuos restantes, un fenómeno conocido como el "Efecto Bandwagon".</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">XV. Resiliencia Cognitiva y Salud Mental Digital</h3>
+            <p>Finalmente, debemos considerar el impacto de la red en la salud mental individual. El bombardeo constante de información contradictoria puede llevar a un estado de "Anomia Informativa", donde el individuo pierde la capacidad de distinguir entre lo real y lo ficticio, cayendo en un nihilismo epistémico. La variable "Pensamiento Crítico" en nuestro simulador es, por tanto, una métrica de la resiliencia mental de la población.</p>
+            <p>Fortalecer esta resiliencia requiere no solo mejores algoritmos, sino una comprensión profunda de nuestra propia arquitectura cognitiva. SOCIODYNAMICS es una invitación a la introspección: ¿cómo de susceptibles somos nosotros mismos a las ondas que visualizamos en la pantalla? La conciencia de nuestra vulnerabilidad es el primer paso hacia una verdadera soberanía intelectual en el siglo XXI.</p>
+
+            <h3 style="color: var(--accent); margin-top: 30px;">Ética de la Comunicación en la Era de la Post-verdad</h3>
+            <p>A medida que cerramos este tratado, es imperativo abordar la dimensión ética. Las herramientas de simulación como SOCIODYNAMICS nos revelan lo frágil que es el consenso social ante ataques informativos bien orquestados. En un mundo donde la atención es el recurso más escaso, la veracidad a menudo se sacrifica en el altar del compromiso (engagement).</p>
+            <p>La responsabilidad del usuario de este simulador es comprender que detrás de cada punto gris, rojo o verde, hay una representación de un ser humano real cuya visión del mundo puede ser moldeada por el flujo informacional. La neuroplasticidad social nos da la esperanza de que, mediante la educación y el fortalecimiento de las redes de confianza, podemos construir una sociedad más resiliente ante la manipulación, preservando la integridad de nuestra esfera pública para las generaciones venideras.</p>
+
+            <h2 style="font-size: 2rem; margin-top: 60px; color: var(--accent); border-top: 2px solid var(--border); pt: 20px;">BIBLIOGRAFÍA Y REFERENCIAS RECOMENDADAS</h2>
+            <ul style="margin-left: 20px; margin-bottom: 20px; line-height: 1.6;">
+                <li>Rogers, E. M. (2003). <em>Diffusion of Innovations</em>. Free Press.</li>
+                <li>Granovetter, M. S. (1973). <em>The Strength of Weak Ties</em>. American Journal of Sociology.</li>
+                <li>Watts, D. J., & Strogatz, S. H. (1998). <em>Collective dynamics of 'small-world' networks</em>. Nature.</li>
+                <li>Barabási, A. L., & Albert, R. (1999). <em>Emergence of scaling in random networks</em>. Science.</li>
+                <li>Kahneman, D. (2011). <em>Thinking, Fast and Slow</em>. Farrar, Straus and Giroux.</li>
+                <li>Sunstein, C. R. (2017). <em>#Republic: Divided Democracy in the Age of Social Media</em>. Princeton University Press.</li>
+                <li>De la Serna, J. M. (2018). <em>Neuroplasticidad: Ejercicios para mejorar la memoria y la atención</em>. Editorial Académica Española.</li>
+                <li>Lazer, D. J., et al. (2018). <em>The science of fake news</em>. Science.</li>
+            </ul>
+
+            <p style="margin-top: 30px; font-style: italic; border-top: 1px solid var(--border); padding-top: 10px; font-size: 0.9rem;">Este simulador es una contribución a la comprensión de la neuroplasticidad colectiva. Diseñado para ser utilizado en entornos académicos, museos de ciencia y laboratorios de análisis social. El código es 100% autónomo y no requiere de recursos externos, garantizando su preservación y uso en cualquier contexto educativo.</p>
+
+            <button onclick="document.getElementById('modal').style.display='none'" class="primary" style="margin-top: 40px; width: auto; padding: 15px 40px; font-size: 1.1rem;">Comprendido, iniciar experimentación científica</button>
         </div>
     </div>
 </div>
@@ -584,8 +784,9 @@
         interact(tick, world) {
             if (this.state !== STATES.ACTIVE && this.state !== STATES.DEBUNKER) return;
 
-            const delay = 30 + (this.age * 0.5);
-            if (tick - this.lastActionTick < delay) return;
+            // Velocidad de respuesta: influenciada por edad y curiosidad
+            const responseDelay = 30 + (this.age * 0.5) * (1.2 - this.curiosity);
+            if (tick - this.lastActionTick < responseDelay) return;
             this.lastActionTick = tick;
 
             // Probabilidad de interactuar con cada contacto para no procesar todos siempre
@@ -623,7 +824,11 @@
             const activeFriends = target.contacts.filter(cid => world.agents[cid].state === STATES.ACTIVE).length;
             const socialProof = activeFriends / target.contacts.length;
 
-            let beliefProb = msg.baseProb * (1 + this.influence) * (1 + socialProof * 0.5);
+            // Confianza en la fuente: mayor si es de la misma comunidad o si es un líder influyente
+            const sourceTrust = (this.community === target.community ? 1.3 : 0.7) * (1 + this.influence * 0.5);
+            target.trust = lerp(target.trust, sourceTrust, 0.1); // La confianza evoluciona con la interacción
+
+            let beliefProb = msg.baseProb * target.trust * (1 + socialProof * 0.5);
             if (type === 'innovacion') beliefProb = msg.baseProb * target.benefitPerception * (1 + socialProof);
 
             const ageResistance = target.age > 55 ? 0.15 : 0;
@@ -982,42 +1187,11 @@
 
             if (visMode === 'heatmap') this.drawHeatmap(ctx);
 
-            // Dibujar conexiones
-            this.connections.forEach(([i, j, key]) => {
-                if (visMode === 'tree') { if (this.agents[i].infectedBy !== j && this.agents[j].infectedBy !== i) return; }
-
-                const lastUsage = this.pathUsage.get(key) || 0;
-                const recency = Math.max(0, 1 - (this.tick - lastUsage) / 50); // Glow que se desvanece
-
-                if (recency > 0) {
-                    ctx.beginPath();
-                    ctx.strokeStyle = `rgba(59, 130, 246, ${0.1 + recency * 0.8})`;
-                    ctx.lineWidth = 0.5 + recency * 2;
-                    ctx.moveTo(this.agents[i].x, this.agents[i].y);
-                    ctx.lineTo(this.agents[j].x, this.agents[j].y);
-                    ctx.stroke();
-
-                    // Pulso de onda viajando por la conexión
-                    const pulseOffset = (this.tick * 0.05) % 1;
-                    const p1 = this.agents[i], p2 = this.agents[j];
-                    // Si i fue infectado por j, la onda va de j a i, y viceversa
-                    const source = p1.infectedBy === p2.id ? p2 : p1;
-                    const target = source === p1 ? p2 : p1;
-
-                    const wx = lerp(source.x, target.x, pulseOffset);
-                    const wy = lerp(source.y, target.y, pulseOffset);
-
-                    ctx.fillStyle = 'rgba(255, 255, 255, ' + recency + ')';
-                    ctx.beginPath(); ctx.arc(wx, wy, 2, 0, Math.PI * 2); ctx.fill();
-                } else {
-                    ctx.beginPath();
-                    ctx.strokeStyle = 'rgba(255,255,255,0.02)';
-                    ctx.lineWidth = 0.5;
-                    ctx.moveTo(this.agents[i].x, this.agents[i].y);
-                    ctx.lineTo(this.agents[j].x, this.agents[j].y);
-                    ctx.stroke();
-                }
-            });
+            if (visMode === 'tree') {
+                this.renderTree(ctx);
+            } else {
+                this.renderNetwork(ctx);
+            }
 
             this.waves.forEach(w => {
                 ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
@@ -1068,6 +1242,70 @@
             });
         }
 
+        renderNetwork(ctx) {
+            // Dibujar conexiones estándar
+            this.connections.forEach(([i, j, key]) => {
+
+                const lastUsage = this.pathUsage.get(key) || 0;
+                const recency = Math.max(0, 1 - (this.tick - lastUsage) / 50); // Glow que se desvanece
+
+                if (recency > 0) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(59, 130, 246, ${0.1 + recency * 0.8})`;
+                    ctx.lineWidth = 0.5 + recency * 2;
+                    ctx.moveTo(this.agents[i].x, this.agents[i].y);
+                    ctx.lineTo(this.agents[j].x, this.agents[j].y);
+                    ctx.stroke();
+
+                    // Pulso de onda viajando por la conexión
+                    const pulseOffset = (this.tick * 0.05) % 1;
+                    const p1 = this.agents[i], p2 = this.agents[j];
+                    // Si i fue infectado por j, la onda va de j a i, y viceversa
+                    const source = p1.infectedBy === p2.id ? p2 : p1;
+                    const target = source === p1 ? p2 : p1;
+
+                    const wx = lerp(source.x, target.x, pulseOffset);
+                    const wy = lerp(source.y, target.y, pulseOffset);
+
+                    ctx.fillStyle = 'rgba(255, 255, 255, ' + recency + ')';
+                    ctx.beginPath(); ctx.arc(wx, wy, 2, 0, Math.PI * 2); ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(this.agents[i].x, this.agents[i].y);
+                    ctx.lineTo(this.agents[j].x, this.agents[j].y);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        renderTree(ctx) {
+            // Dibujar árbol jerárquico
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
+            ctx.lineWidth = 1;
+            this.agents.forEach(a => {
+                if (a.infectedBy !== null) {
+                    const source = this.agents[a.infectedBy];
+                    ctx.beginPath();
+                    ctx.moveTo(source.x, source.y);
+                    ctx.lineTo(a.x, a.y);
+                    ctx.stroke();
+
+                    // Flecha indicadora de dirección
+                    const angle = Math.atan2(a.y - source.y, a.x - source.x);
+                    const tx = lerp(source.x, a.x, 0.8), ty = lerp(source.y, a.y, 0.8);
+                    ctx.save();
+                    ctx.translate(tx, ty);
+                    ctx.rotate(angle);
+                    ctx.beginPath();
+                    ctx.moveTo(-5, -3); ctx.lineTo(0, 0); ctx.lineTo(-5, 3);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            });
+        }
+
         updateStats(isPrimary) {
             const informedAgents = this.agents.filter(a => a.state !== STATES.UNINFORMED);
             const informed = informedAgents.length;
@@ -1105,6 +1343,10 @@
 
                 const reachedComms = new Set(informedAgents.map(a => a.community)).size;
                 document.getElementById('stat-comm').textContent = reachedComms + " / 6";
+
+                const hubReach = this.agents.filter(a => a.isInfluencer).reduce((sum, h) => sum + h.reachedCount, 0);
+                const hubImpact = informed > 0 ? (hubReach / informed * 100).toFixed(1) : 0;
+                document.getElementById('stat-hubs-impact').textContent = hubImpact + "%";
 
                 document.getElementById('stat-unreached').textContent = this.popCount - informed;
                 document.getElementById('stat-max-size').textContent = Math.max(informed, parseInt(document.getElementById('stat-max-size').textContent || 0));
