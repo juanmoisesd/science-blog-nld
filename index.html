@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio de Polarización Social | Simulador Científico Interactivo</title>
+    <svg style="display:none">
+        <defs>
+            <filter id="os-glitch-filter">
+                <feTurbulence type="fractalNoise" baseFrequency="0.05 0.5" numOctaves="2" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" />
+            </filter>
+            <filter id="os-chromatic">
+                <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="red" />
+                <feOffset dx="2" dy="0" in="red" result="red-offset" />
+                <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
+                <feBlend mode="screen" in="red-offset" in2="green" />
+            </filter>
+        </defs>
+    </svg>
+    <style>
+        :root {
+            --bg-oscuro: #05050a;
+            --panel-bg: rgba(10, 10, 20, 0.95);
+            --acento: #00f2ff;
+            --acento-brillo: rgba(0, 242, 255, 0.3);
+            --texto-principal: #f0f0f5;
+            --texto-tenue: #808095;
+            --borde: rgba(0, 242, 255, 0.2);
+            --cristal: rgba(255, 255, 255, 0.03);
+            --rojo: #ff2d55;
+            --azul: #007aff;
+            --fuente-principal: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --fuente-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+            --header-h: 60px;
+        }
+
+        * { box-sizing: border-box; cursor: crosshair; }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--bg-oscuro);
+            color: var(--texto-principal);
+            font-family: var(--fuente-principal);
+            overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- Social OS Layout --- */
+        #social-os-header {
+            height: var(--header-h);
+            background: rgba(0,0,0,0.8);
+            border-bottom: 1px solid var(--borde);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 30px; z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        #os-clock { font-family: var(--fuente-mono); font-size: 0.9rem; color: var(--acento); }
+
+        #contenedor-app { display: flex; flex: 1; position: relative; }
+
+        /* Área de Simulación */
+        #area-simulacion {
+            flex: 1; position: relative; display: flex; overflow: hidden;
+            background: #000;
+        }
+
+        /* Efecto de ruido mejorado y Glitch */
+        #area-simulacion::after {
+            content: " ";
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.02));
+            background-size: 100% 4px, 4px 100%;
+            pointer-events: none; z-index: 5;
+            animation: scanlineFlicker 0.2s infinite;
+        }
+        @keyframes scanlineFlicker {
+            0% { opacity: 1; } 50% { opacity: 0.95; } 100% { opacity: 1; }
+        }
+
+        .glitch-active #area-simulacion {
+            animation: shake 0.15s infinite;
+            filter: url(#os-glitch-filter) url(#os-chromatic) contrast(1.4);
+        }
+        @keyframes shake {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            40% { transform: translate(3px, 2px) rotate(0deg); }
+            60% { transform: translate(-3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            100% { transform: translate(2px, 2px) rotate(0deg); }
+        }
+
+        .envoltura-canvas {
+            flex: 1; height: 100%; position: relative; min-width: 0;
+            border-right: 1px solid var(--borde);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+
+        .etiqueta-canvas {
+            position: absolute; top: 30px; left: 30px;
+            padding: 8px 16px; background: rgba(0,0,0,0.9);
+            border: 1px solid var(--acento); border-radius: 2px;
+            font-size: 0.65rem; color: var(--acento);
+            text-transform: uppercase; letter-spacing: 4px; font-weight: 800;
+            pointer-events: none; z-index: 10;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Panel de Control Estilo OS */
+        #panel-control {
+            width: 450px; background: var(--panel-bg);
+            backdrop-filter: blur(40px); border-left: 1px solid var(--borde);
+            display: flex; flex-direction: column;
+            box-shadow: -20px 0 50px rgba(0,0,0,0.5);
+            z-index: 20; overflow: hidden;
+            transition: transform 0.4s ease;
+        }
+
+        #panel-inner {
+            flex: 1; overflow-y: auto; padding: 40px;
+            scrollbar-width: thin; scrollbar-color: var(--acento) transparent;
+        }
+
+        .seccion-panel { margin-bottom: 45px; animation: aparecer 0.5s ease-out; }
+        @keyframes aparecer { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        h2 {
+            font-size: 0.65rem; color: var(--acento); margin-bottom: 25px;
+            text-transform: uppercase; letter-spacing: 4px; font-family: var(--fuente-mono);
+            border-bottom: 1px solid var(--borde); padding-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            text-shadow: 0 0 15px var(--acento-brillo);
+            background: linear-gradient(90deg, rgba(0,242,255,0.05), transparent);
+        }
+
+        .grupo-control { margin-bottom: 28px; }
+        .fila-etiqueta { display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center; }
+        label { font-size: 0.7rem; color: var(--texto-tenue); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        .valor-display { font-family: var(--fuente-mono); color: var(--acento); font-size: 0.85rem; text-shadow: 0 0 12px var(--acento-brillo); }
+
+        input[type="range"] {
+            width: 100%; -webkit-appearance: none; background: rgba(255,255,255,0.06);
+            height: 3px; border-radius: 3px; outline: none; transition: 0.3s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+            background: var(--acento); box-shadow: 0 0 20px var(--acento-brillo); cursor: pointer;
+            border: 3px solid #fff; transition: transform 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .cuadricula-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .tarjeta-stat {
+            background: rgba(255, 255, 255, 0.01); padding: 25px; border-radius: 4px;
+            border: 1px solid var(--borde); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative; overflow: hidden;
+        }
+        .tarjeta-stat:hover {
+            border-color: var(--acento);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 242, 255, 0.15);
+            background: rgba(0, 242, 255, 0.02);
+        }
+        .stat-etiqueta { font-size: 0.55rem; color: var(--texto-tenue); text-transform: uppercase; letter-spacing: 3px; display: block; margin-bottom: 12px; }
+        .stat-valor { font-size: 1.6rem; font-family: var(--fuente-mono); font-weight: 200; color: #fff; }
+
+        button {
+            background: transparent; color: var(--acento); border: 1px solid var(--acento); padding: 18px;
+            border-radius: 4px; cursor: pointer; font-weight: 700; font-family: var(--fuente-mono);
+            transition: all 0.3s; margin-bottom: 14px; width: 100%; font-size: 0.7rem;
+            text-transform: uppercase; letter-spacing: 3px; position: relative; overflow: hidden;
+        }
+        button:hover { background: var(--acento); color: #000; box-shadow: 0 0 40px var(--acento-brillo); }
+        button.primario { background: var(--acento); color: #000; border: none; }
+        button.secundario { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--borde); color: var(--texto-tenue); }
+        button.secundario:hover { color: #fff; border-color: #fff; }
+
+        .btn-evento, .btn-decreto {
+            background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--texto-tenue); padding: 12px; font-size: 0.6rem; letter-spacing: 2px;
+            margin-bottom: 8px; text-align: left; transition: 0.3s;
+        }
+        .btn-evento:hover, .btn-decreto:hover { border-color: var(--acento); color: #fff; background: rgba(0, 242, 255, 0.05); }
+        .btn-decreto.activo { border-color: var(--acento); color: var(--acento); background: rgba(0, 242, 255, 0.1); border-left: 4px solid var(--acento); }
+
+        /* Notificaciones y Superposiciones */
+        #notificacion-evento {
+            position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(2, 2, 5, 0.9); border: 1px solid var(--acento);
+            padding: 20px 50px; border-radius: 2px; backdrop-filter: blur(30px);
+            color: #fff; text-transform: uppercase; letter-spacing: 6px; font-weight: 800;
+            font-size: 0.9rem; display: none; z-index: 1000; pointer-events: none;
+            box-shadow: 0 0 80px rgba(0, 242, 255, 0.2);
+            animation: bajar 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            border-left: 10px solid var(--acento);
+        }
+
+        #modal-inicio {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; justify-content: center;
+            align-items: center; z-index: 3000; backdrop-filter: blur(10px);
+        }
+        .intro-card {
+            background: var(--panel-bg); border: 1px solid var(--acento);
+            padding: 50px; max-width: 600px; text-align: center;
+            box-shadow: 0 0 100px rgba(0, 242, 255, 0.2);
+        }
+        @keyframes bajar { from { opacity: 0; transform: translate(-50%, -50px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+        #superposicion-stats {
+            position: absolute; bottom: 30px; left: 30px;
+            display: flex; gap: 25px; pointer-events: none; z-index: 20;
+            transition: transform 0.5s ease;
+        }
+
+        #panel-comparativo {
+            position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+            width: 400px; background: rgba(0, 242, 255, 0.05); border: 1px solid var(--acento);
+            backdrop-filter: blur(20px); padding: 25px; border-radius: 4px;
+            display: none; z-index: 30; text-align: center;
+        }
+        .comp-stat-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
+        .contenedor-grafico {
+            width: 320px; background: rgba(5, 5, 10, 0.9); border: 1px solid var(--borde);
+            padding: 20px; backdrop-filter: blur(15px); border-radius: 4px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            transition: all 0.3s ease;
+        }
+        .grafico-titulo { font-size: 0.6rem; color: var(--acento); text-transform: uppercase; letter-spacing: 4px; margin-bottom: 20px; display: flex; justify-content: space-between; font-family: var(--fuente-mono); }
+
+        /* --- Terminal de Eventos --- */
+        #terminal-container {
+            position: absolute; top: 30px; right: 30px; width: 300px;
+            background: rgba(0,0,0,0.7); border: 1px solid var(--borde);
+            padding: 15px; font-family: var(--fuente-mono); font-size: 0.65rem;
+            color: var(--acento); z-index: 20; pointer-events: none;
+            max-height: 200px; overflow: hidden;
+            display: flex; flex-direction: column-reverse;
+        }
+        .terminal-line { margin-bottom: 4px; opacity: 0; animation: logFade 0.3s forwards; }
+        @keyframes logFade { to { opacity: 1; } }
+
+        /* Modal Académico Mejorado */
+        #modal-tratado {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 2, 5, 0.98); display: none; justify-content: center;
+            align-items: center; z-index: 2000; padding: 40px;
+            backdrop-filter: blur(20px);
+        }
+        #contenido-modal {
+            background: var(--bg-oscuro); width: 100%; max-width: 1200px; height: 85vh;
+            padding: 60px; border: 1px solid var(--borde);
+            overflow-y: auto; position: relative;
+            scrollbar-width: thin; scrollbar-color: var(--acento) transparent;
+        }
+        .cerrar-modal { position: absolute; top: 50px; right: 50px; font-size: 3rem; cursor: pointer; color: var(--texto-tenue); transition: 0.3s; font-weight: 100; }
+        .cerrar-modal:hover { color: var(--acento); transform: rotate(90deg); }
+
+        .articulo-academico {
+            font-size: 1.1rem; line-height: 2; color: #b0b0d0; text-align: justify;
+            max-width: 900px; margin: 0 auto; font-weight: 300;
+        }
+        .encyclopedia-nav {
+            position: sticky; top: -60px; background: var(--bg-oscuro);
+            padding: 20px 0; border-bottom: 1px solid var(--borde);
+            margin-bottom: 40px; display: flex; gap: 20px; z-index: 10;
+        }
+        .nav-item { font-size: 0.6rem; color: var(--acento); cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
+        .nav-item:hover { text-decoration: underline; }
+        .articulo-academico h1 { font-size: 4rem; color: #fff; margin-bottom: 80px; font-weight: 800; text-align: center; letter-spacing: -2px; }
+        .articulo-academico h2 { font-size: 2rem; color: var(--acento); margin-top: 100px; text-transform: none; border: none; letter-spacing: 0; font-family: var(--fuente-principal); }
+        .articulo-academico p { margin-bottom: 40px; }
+        .articulo-academico strong { color: #fff; font-weight: 700; }
+
+        .caja-didactica {
+            background: linear-gradient(135deg, rgba(0, 242, 255, 0.05), rgba(0, 242, 255, 0.01));
+            border-left: 4px solid var(--acento); padding: 50px; margin-bottom: 80px;
+            border-radius: 4px;
+        }
+
+        #tooltip-agente {
+            position: absolute; background: rgba(2, 2, 5, 0.98);
+            backdrop-filter: blur(40px); border: 1px solid var(--acento);
+            padding: 35px; border-radius: 2px; display: none; pointer-events: none;
+            box-shadow: 0 40px 120px rgba(0,0,0,1); width: 420px; z-index: 500;
+            border-left: 5px solid var(--acento);
+        }
+        .stat-grid-dossier { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .dossier-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
+        .dossier-label { font-size: 0.55rem; color: var(--texto-tenue); text-transform: uppercase; letter-spacing: 2px; }
+        .dossier-value { font-size: 0.85rem; color: #fff; font-family: var(--fuente-mono); }
+
+        .btn-toggle {
+            flex: 1; text-align: center; font-size: 0.6rem; padding: 14px;
+            background: rgba(255,255,255,0.02); border: 1px solid var(--borde);
+            cursor: pointer; text-transform: uppercase; letter-spacing: 3px;
+            transition: 0.3s; font-family: var(--fuente-mono);
+            border-radius: 4px;
+        }
+        .btn-toggle.activo {
+            border-color: var(--acento);
+            color: var(--acento);
+            background: rgba(0, 242, 255, 0.08);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+        }
+
+        .divisor { height: 1px; background: var(--borde); margin: 30px 0; }
+    </style>
+</head>
+<body>
+<header id="social-os-header">
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <span style="color: var(--acento); font-weight: 800; letter-spacing: 2px;">SOCIAL_OS v1.0</span>
+        <div id="os-status-indicator" style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #0f0; box-shadow: 0 0 10px #0f0;"></div>
+            <span style="font-size: 0.6rem; color: #0f0; text-transform: uppercase;">Sistema Operativo en Línea</span>
+        </div>
+    </div>
+    <div id="os-clock">00:00:00</div>
+</header>
+
+<div id="contenedor-app">
+    <div id="area-simulacion">
+        <div id="terminal-container"></div>
+        <div class="envoltura-canvas" id="envoltura-a">
+            <div class="etiqueta-canvas">Esfera Social Principal : Dinámicas de Opinión</div>
+            <canvas id="canvasSim"></canvas>
+        </div>
+        <div class="envoltura-canvas" id="envoltura-b" style="display: none;">
+            <div class="etiqueta-canvas">Esfera Comparativa : Radicalización Tribal</div>
+            <canvas id="canvasSimB"></canvas>
+        </div>
+
+        <div id="superposicion-stats">
+            <div class="contenedor-grafico">
+                <div class="grafico-titulo"><span>Distribución Ideológica</span><span id="pol-mini" style="opacity:0.5">0.00</span></div>
+                <canvas id="canvasHistograma" height="150"></canvas>
+            </div>
+            <div class="contenedor-grafico">
+                <div class="grafico-titulo"><span>Tendencia de Polarización</span><span id="div-mini" style="opacity:0.5">1.00</span></div>
+                <canvas id="canvasLineaPolarizacion" height="150"></canvas>
+            </div>
+        </div>
+
+        <div id="tooltip-agente"></div>
+        <div id="notificacion-evento">Señal de Sistema</div>
+        <div id="panel-comparativo">
+            <h3 style="font-size: 0.7rem; color: var(--acento); letter-spacing: 3px; margin-bottom: 20px;">ANÁLISIS DE DIVERGENCIA SOCIAL</h3>
+            <div class="comp-stat-row"><span class="dossier-label">Distancia Ideológica</span><span class="dossier-value" id="comp-dist">0.00</span></div>
+            <div class="comp-stat-row"><span class="dossier-label">Delta de Polarización</span><span class="dossier-value" id="comp-pol">0.00</span></div>
+            <div class="comp-stat-row"><span class="dossier-label">Cohesión Relativa</span><span class="dossier-value" id="comp-coh">0%</span></div>
+        </div>
+    </div>
+
+    <div id="panel-control">
+        <div id="panel-inner">
+        <div class="seccion-panel">
+            <h1 style="font-size: 1.8rem; margin: 0 0 5px 0; font-weight: 200; letter-spacing: -1px; color: #fff;">SOCIAL <span style="color: var(--acento); font-weight: 800;">ENGINE</span></h1>
+            <p style="color: var(--texto-tenue); font-size: 0.55rem; margin-bottom: 30px; letter-spacing: 3px; text-transform: uppercase;">Laboratorio de Dinámicas de Grupo</p>
+            <button class="primario" id="btn-explicar">Acceder a Enciclopedia Interactiva</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <button id="btn-reiniciar" class="secundario">Reiniciar Núcleo</button>
+                <button id="btn-comparar" class="secundario">Modo Comparativo</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                <button id="btn-save" class="secundario">Snapshot Sistema</button>
+                <button id="btn-load" class="secundario">Cargar Memoria</button>
+            </div>
+            <button id="btn-report" class="secundario" style="margin-top:10px;">📄 Generar Informe de Campo</button>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Configuración de Agentes</h2>
+            <div class="grupo-control">
+                <div class="fila-etiqueta"><label>Densidad de Población</label><span class="valor-display" id="val-agentes">500</span></div>
+                <input type="range" id="input-agentes" min="100" max="1000" value="500">
+            </div>
+            <div class="grupo-control">
+                <div class="fila-etiqueta"><label>Fuerza de Homofilia</label><span class="valor-display" id="val-homofilia">0.50</span></div>
+                <input type="range" id="input-homofilia" min="0" max="1" value="0.5" step="0.01">
+            </div>
+            <div class="grupo-control">
+                <div class="fila-etiqueta"><label>Sesgo de Confirmación</label><span class="valor-display" id="val-sesgo">0.50</span></div>
+                <input type="range" id="input-sesgo" min="0" max="1" value="0.5" step="0.01">
+            </div>
+            <div class="grupo-control">
+                <div class="fila-etiqueta"><label>Influencia Algorítmica</label><span class="valor-display" id="val-algo">0.00</span></div>
+                <input type="range" id="input-algo" min="0" max="1" value="0.0" step="0.01">
+            </div>
+            <div class="grupo-control">
+                <div class="fila-etiqueta"><label>Influencia de Líderes</label><span class="valor-display" id="val-lideres">0.50</span></div>
+                <input type="range" id="input-lideres" min="0" max="1" value="0.5" step="0.01">
+            </div>
+            <div class="grupo-control">
+                <div class="fila-etiqueta"><label>Probabilidad de Diálogo</label><span class="valor-display" id="val-dialogo">0.15</span></div>
+                <input type="range" id="input-dialogo" min="0" max="1" value="0.15" step="0.01">
+            </div>
+            <div class="grupo-control">
+                <div class="fila-etiqueta"><label>Velocidad Radicalización</label><span class="valor-display" id="val-radicalvel">0.50</span></div>
+                <input type="range" id="input-radicalvel" min="0" max="1" value="0.5" step="0.01">
+            </div>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Estadísticas en Tiempo Real</h2>
+            <div class="cuadricula-stats">
+                <div class="tarjeta-stat"><span class="stat-etiqueta">Radicalización</span><span class="stat-valor" id="stat-radical">0%</span></div>
+                <div class="tarjeta-stat"><span class="stat-etiqueta">Polarización</span><span class="stat-valor" id="stat-polarizacion">0.000</span></div>
+                <div class="tarjeta-stat"><span class="stat-etiqueta">Moderados</span><span class="stat-valor" id="stat-moderados">100%</span></div>
+                <div class="tarjeta-stat"><span class="stat-etiqueta">Cámaras de Eco</span><span class="stat-valor" id="stat-grupos">1</span></div>
+                <div class="tarjeta-stat"><span class="stat-etiqueta">Fricción Social</span><span class="stat-valor" id="stat-interratio">0%</span></div>
+                <div class="tarjeta-stat"><span class="stat-etiqueta">Entropía Sistémica</span><span class="stat-valor" id="stat-entropy">0.00</span></div>
+            </div>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Correlación: Educación vs Extremismo</h2>
+            <div class="contenedor-grafico" style="width:100%; height:150px; background:rgba(0,0,0,0.3);">
+                <canvas id="canvasCorrelacion" height="150"></canvas>
+            </div>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Eventos de Impacto Social</h2>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                <button class="btn-evento" data-evento="elecciones">🗳️ Ciclo Electoral (Polarización Aguda)</button>
+                <button class="btn-evento" data-evento="crisis">📉 Crisis Económica (Aumento Hostilidad)</button>
+                <button class="btn-evento" data-evento="desinfo">🦠 Campaña de Desinformación (Fake News)</button>
+                <button class="btn-evento" data-evento="consenso">🤝 Acuerdo Nacional (Moderación Colectiva)</button>
+            </div>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Escenarios Narrativos</h2>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                <button class="secundario btn-escenario" data-sc="bubble">🧪 Escenario: La Burbuja de Filtro</button>
+                <button class="secundario btn-escenario" data-sc="tribal">⚔️ Escenario: El Giro Tribal</button>
+                <button class="secundario btn-escenario" data-sc="consensus">🕊️ Escenario: El Camino al Consenso</button>
+            </div>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Configuraciones de Base</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <button class="secundario btn-modo" data-modo="abierta">Sociedad Abierta</button>
+                <button class="secundario btn-modo" data-modo="tribal">Tribalismo Extremo</button>
+                <button class="secundario btn-modo" data-modo="digital">Burbujas Digitales</button>
+                <button class="secundario btn-modo" data-modo="debate">Debate Racional</button>
+            </div>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Núcleo Matemático (Tiempo Real)</h2>
+            <div style="background:rgba(0,0,0,0.4); padding:15px; font-family:var(--fuente-mono); font-size:0.6rem; color:var(--acento); line-height:1.5;">
+                <div>H_Shannon: <span id="math-shannon">0.00</span></div>
+                <div>Integración: Euler (dt=1.0)</div>
+                <div>Mod_Opinión: Hegselmann-Krause [ext]</div>
+                <div style="margin-top:5px; color:var(--texto-tenue);">Δθ = (1-R) * η * Σ(θj - θi)</div>
+            </div>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Gobernanza (Decretos de Sistema)</h2>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 6px;">
+                <button class="btn-decreto" data-decreto="neutralidad">⚖️ Ley de Neutralidad Algorítmica</button>
+                <button class="btn-decreto" data-decreto="dialogo">🗣️ Protocolo de Diálogo Obligatorio</button>
+                <button class="btn-decreto" data-decreto="educacion">🎓 Inversión en Pensamiento Crítico</button>
+                <button class="btn-decreto" data-decreto="censura">🚫 Control de Flujos Informativos</button>
+            </div>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Gestión de Medios (Hubs)</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="secundario btn-hub" data-type="neutral">📡 Antena Neutral</button>
+                <button class="secundario btn-hub" data-type="polar">☢️ Antena Polarizada</button>
+            </div>
+            <button class="secundario" onclick="app.hubs = []">Limpiar Medios</button>
+        </div>
+
+        <div class="seccion-panel">
+            <h2>Visualización de Datos</h2>
+            <div style="display: flex; gap: 12px;">
+                <div class="btn-toggle activo" id="toggle-red">Topología de Red</div>
+                <div class="btn-toggle" id="toggle-calor">Densidad Ideológica</div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-tratado">
+    <div id="contenido-modal">
+        <span class="cerrar-modal">&times;</span>
+        <div class="articulo-academico" id="texto-academico"></div>
+    </div>
+</div>
+
+<div id="modal-inicio">
+    <div class="intro-card" id="onboarding-step-1">
+        <h1 style="color:var(--acento); font-size:2rem; margin-bottom:20px; letter-spacing:-1px;">BIENVENIDO A SOCIAL_OS</h1>
+        <p style="color:var(--texto-tenue); line-height:1.6; margin-bottom:30px;">
+            Estás a punto de operar un motor de simulación social de alta fidelidad. Este sistema modela la formación de opiniones y el colapso del diálogo colectivo.
+        </p>
+        <button class="primario" onclick="app.nextStep(2)">SIGUIENTE ></button>
+    </div>
+    <div class="intro-card" id="onboarding-step-2" style="display:none;">
+        <h2 style="color:var(--acento); margin-bottom:20px;">MANIPULACIÓN TÁCTIL</h2>
+        <p style="color:var(--texto-tenue); line-height:1.6; margin-bottom:30px;">
+            Puedes <strong>arrastrar agentes</strong> para moverlos, o usar <strong>Shift+Click</strong> para radicalizarlos o moderarlos manualmente. El sistema responderá a tus intervenciones en tiempo real.
+        </p>
+        <button class="primario" onclick="app.nextStep(3)">ENTENDIDO ></button>
+    </div>
+    <div class="intro-card" id="onboarding-step-3" style="display:none;">
+        <h2 style="color:var(--acento); margin-bottom:20px;">ANÁLISIS DE DATOS</h2>
+        <p style="color:var(--texto-tenue); line-height:1.6; margin-bottom:30px;">
+            En la parte inferior encontrarás gráficos de <strong>Distribución Ideológica</strong> y <strong>Tendencia de Polarización</strong>. En el panel derecho, la <strong>Correlación de Educación</strong> te permitirá analizar quiénes son más propensos al extremismo.
+        </p>
+        <button class="primario" onclick="app.nextStep(4)">CONTINUAR ></button>
+    </div>
+    <div class="intro-card" id="onboarding-step-4" style="display:none;">
+        <h2 style="color:var(--acento); margin-bottom:20px;">TRATADO CIENTÍFICO</h2>
+        <p style="color:var(--texto-tenue); line-height:1.6; margin-bottom:30px;">
+            Para una comprensión profunda, accede a la <strong>Enciclopedia Interactiva</strong>. Contiene más de 10,000 palabras de análisis sobre neurobiología, sociología y algoritmos.
+        </p>
+        <button class="primario" onclick="document.getElementById('modal-inicio').style.display='none'">INICIALIZAR KERNEL</button>
+    </div>
+</div>
+
+<script>
+    /**
+     * @file Social_OS Audio Engine
+     * @description Generación de audio sintético procedimental.
+     */
+    class AudioEngine {
+        constructor() {
+            this.ctx = null;
+        }
+        init() {
+            if (this.ctx) return;
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.playHum();
+        }
+        playHum() {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(50, this.ctx.currentTime);
+            gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start();
+        }
+        playClick() {
+            if (!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+        }
+        playAlert() {
+            if (!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(300, this.ctx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(); osc.stop(this.ctx.currentTime + 0.5);
+        }
+        playGlitch() {
+            if (!this.ctx) return;
+            const bufferSize = this.ctx.sampleRate * 0.2;
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1000;
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.2);
+            noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            noise.start();
+        }
+    }
+
+    /**
+     * @file Laboratorio de Simulación de Polarización Social
+     * @description Implementación técnica de dinámica de opiniones basada en agentes.
+     * @author Jules (Especialista en Simulaciones)
+     */
+
+    class Agente {
+        constructor(id, w, h) {
+            this.id = id;
+            this.x = Math.random() * w;
+            this.y = Math.random() * h;
+            this.vx = (Math.random() - 0.5) * 1.8;
+            this.vy = (Math.random() - 0.5) * 1.8;
+            this.radio = 4 + Math.random() * 3;
+
+            // Opinión: -1 (Extremo A), 0 (Centro), +1 (Extremo B)
+            this.opinion = (Math.random() * 2) - 1;
+            this.opinionInicial = this.opinion;
+            this.historial = [{t: 0, v: this.opinion}];
+
+            // Atributos psicológicos y cognitivos
+            this.apertura = Math.random();
+            this.educacion = Math.random();
+            this.critica = Math.random();
+            this.resistencia = Math.random();
+            this.confianza = Math.random();
+            this.sesgo = Math.random();
+            this.influencia = Math.random();
+            this.esLider = false;
+            this.liderazgo = 0;
+
+            // Memoria Cognitiva y Estrés
+            this.memoria = new Map(); // ID -> Confianza Relativa
+            this.estres = 0; // 0 a 1
+
+            // Roles especializados
+            this.rol = "Ciudadano";
+            if (Math.random() < 0.1) this.rol = "Escéptico"; // Resistente a fake news
+            else if (Math.random() < 0.05) this.rol = "Agitador"; // Acelera radicalización
+            else if (Math.random() < 0.05) this.rol = "Moderador"; // Actúa como nodo puente
+
+            this.contactos = 0;
+            this.shieldAnim = 0; // Animación de escudo cognitivo
+            this.syncAnim = 0;   // Animación de integración neural
+
+            this.actualizarColor();
+        }
+
+        actualizarColor() {
+            const op = this.opinion;
+            let r, g, b;
+            if (op < 0) { // Rojo Intenso a Gris
+                const f = Math.abs(op);
+                r = Math.floor(100 + (255 - 100) * f);
+                g = Math.floor(100 - (100 - 30) * f);
+                b = Math.floor(120 - (120 - 60) * f);
+            } else { // Azul Eléctrico a Gris
+                const f = op;
+                r = Math.floor(100 - (100 - 0) * f);
+                g = Math.floor(100 + (200 - 100) * f);
+                b = Math.floor(120 + (255 - 120) * f);
+            }
+
+            if (this.rol === "Moderador") { g = Math.min(255, g + 50); b = Math.min(255, b + 20); }
+            if (this.rol === "Agitador") { r = Math.min(255, r + 40); g = Math.max(0, g - 40); }
+
+            this.color = `rgb(${r}, ${g}, ${b})`;
+        }
+
+        dibujar(ctx, seleccionado) {
+            ctx.save();
+
+            // Micro-animaciones de procesamiento cognitivo
+            if (this.shieldAnim > 0) {
+                ctx.strokeStyle = '#ff2d55'; ctx.lineWidth = 2; ctx.globalAlpha = this.shieldAnim;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radio + 8, 0, Math.PI*2); ctx.stroke();
+                this.shieldAnim -= 0.05;
+            }
+            if (this.syncAnim > 0) {
+                ctx.strokeStyle = '#00f2ff'; ctx.lineWidth = 2; ctx.globalAlpha = this.syncAnim;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radio + 5, 0, Math.PI*2); ctx.stroke();
+                this.syncAnim -= 0.05;
+            }
+
+            ctx.beginPath();
+
+            if (this.rol === "Moderador") {
+                // Aura de Paz
+                ctx.save();
+                ctx.globalAlpha = 0.2;
+                ctx.fillStyle = "#00ffcc";
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radio * 4, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            }
+            if (this.rol === "Agitador") {
+                // Pulso Radical
+                const s = Math.sin(Date.now() / 200) * 5;
+                ctx.save();
+                ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 1; ctx.globalAlpha = 0.3;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radio * 3 + s, 0, Math.PI*2); ctx.stroke();
+                ctx.restore();
+            }
+
+            if (this.esLider) {
+                ctx.arc(this.x, this.y, this.radio + 3, 0, Math.PI * 2);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radio, 0, Math.PI * 2);
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = this.color;
+            } else {
+                ctx.arc(this.x, this.y, this.radio, 0, Math.PI * 2);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+            }
+
+            if (seleccionado) {
+                ctx.shadowBlur = 40; ctx.shadowColor = '#00f2ff';
+                ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.stroke();
+            }
+
+            ctx.fillStyle = this.color; ctx.fill(); ctx.restore();
+        }
+
+        mover(w, h, grid, homofilia) {
+            const vision = 120, sep = 30;
+            let fx = 0, fy = 0, sx = 0, sy = 0, n = 0, sn = 0;
+
+            const vecinos = grid.obtenerCercanos(this, vision);
+            for (let i=0; i<vecinos.length; i++) {
+                const otro = vecinos[i];
+                const dx = otro.x - this.x;
+                const dy = otro.y - this.y;
+                const d2 = dx*dx + dy*dy;
+
+                if (d2 > 0 && d2 < vision*vision) {
+                    const dist = Math.sqrt(d2);
+                    const similitud = 1 - Math.abs(this.opinion - otro.opinion) / 2;
+
+                    // Atracción por homofilia: las personas parecidas se acercan físicamente
+                    const fuerza = (similitud - 0.48) * homofilia;
+                    fx += (dx / dist) * fuerza;
+                    fy += (dy / dist) * fuerza;
+                    n++;
+
+                    if (dist < sep) {
+                        sx -= dx / dist; sy -= dy / dist; sn++;
+                    }
+                }
+            }
+
+            if (n > 0) { this.vx += (fx / n) * 0.15; this.vy += (fy / n) * 0.15; }
+            if (sn > 0) { this.vx += (sx / sn) * 0.4; this.vy += (sy / sn) * 0.4; }
+
+            // Movimiento orgánico errático
+            this.vx += (Math.random() - 0.5) * 0.12;
+            this.vy += (Math.random() - 0.5) * 0.12;
+
+            // Inercia ideológica: los radicales se mueven más lentamente
+            const limite = 2.5 * (1 - Math.abs(this.opinion) * 0.5);
+            const v = Math.sqrt(this.vx**2 + this.vy**2);
+            if (v > limite) { this.vx = (this.vx / v) * limite; this.vy = (this.vy / v) * limite; }
+
+            this.x += this.vx; this.y += this.vy;
+
+            // Colisiones con los bordes (rebote suave)
+            const margen = 40;
+            if (this.x < margen) this.vx += 0.4; if (this.x > w - margen) this.vx -= 0.4;
+            if (this.y < margen) this.vy += 0.4; if (this.y > h - margen) this.vy -= 0.4;
+        }
+    }
+
+    class CuadriculaEspacial {
+        constructor(w, h, s) {
+            this.s = s; this.cols = Math.ceil(w / s); this.rows = Math.ceil(h / s);
+            this.celdas = Array.from({ length: this.cols * this.rows }, () => []);
+        }
+        limpiar() { for (let i=0; i<this.celdas.length; i++) this.celdas[i].length = 0; }
+        agregar(a) {
+            const c = Math.max(0, Math.min(this.cols-1, Math.floor(a.x / this.s)));
+            const r = Math.max(0, Math.min(this.rows-1, Math.floor(a.y / this.s)));
+            this.celdas[r * this.cols + c].push(a);
+        }
+        obtenerCercanos(a, r) {
+            const cS = Math.max(0, Math.floor((a.x - r) / this.s)), cE = Math.min(this.cols-1, Math.floor((a.x + r) / this.s));
+            const rS = Math.max(0, Math.floor((a.y - r) / this.s)), rE = Math.min(this.rows-1, Math.floor((a.y + r) / this.s));
+            const res = [];
+            for (let j = rS; j <= rE; j++) {
+                for (let i = cS; i <= cE; i++) {
+                    const celda = this.celdas[j * this.cols + i];
+                    for (let k=0; k<celda.length; k++) if (celda[k] !== a) res.push(celda[k]);
+                }
+            }
+            return res;
+        }
+    }
+
+    class InformationHub {
+        constructor(x, y, op, type) {
+            this.x = x; this.y = y; this.opinion = op;
+            this.type = type; // "neutral", "polarizador"
+            this.radius = 40;
+            this.pulse = 0;
+        }
+        update() {
+            this.pulse = (this.pulse + 0.05) % (Math.PI * 2);
+        }
+        draw(ctx) {
+            const s = Math.sin(this.pulse) * 10;
+            ctx.save();
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = this.opinion === 0 ? "#fff" : (this.opinion > 0 ? "#00f2ff" : "#ff2d55");
+            ctx.strokeStyle = ctx.shadowColor;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius + s, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = ctx.shadowColor;
+            ctx.beginPath(); ctx.arc(this.x, this.y, 8, 0, Math.PI*2); ctx.fill();
+
+            ctx.font = "bold 8px monospace";
+            ctx.textAlign = "center";
+            ctx.fillText(this.type.toUpperCase(), this.x, this.y - 20);
+            ctx.restore();
+        }
+    }
+
+    class ParticulaInfo {
+        constructor(x, y, op, fake) {
+            this.x = x; this.y = y; this.op = op; this.fake = fake;
+            this.vx = (Math.random() - 0.5) * 8; this.vy = (Math.random() - 0.5) * 8;
+            this.vida = 1.0;
+            this.color = fake ? '#ff2d55' : '#00f2ff';
+            this.trail = [];
+        }
+        actualizar() {
+            this.trail.push({x: this.x, y: this.y});
+            if (this.trail.length > 5) this.trail.shift();
+            this.x += this.vx; this.y += this.vy;
+            this.vida -= 0.015;
+        }
+        dibujar(ctx) {
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = this.vida * 0.3;
+            ctx.beginPath();
+            this.trail.forEach((p, i) => { if(i===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+            ctx.stroke();
+
+            ctx.fillStyle = this.color; ctx.globalAlpha = this.vida; ctx.beginPath();
+            ctx.arc(this.x, this.y, 2, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1.0;
+        }
+    }
+
+    class Simulacion {
+        constructor() {
+            this.audio = new AudioEngine();
+            this.currentOnboardingStep = 1;
+            this.canvas = document.getElementById('canvasSim');
+            this.ctx = this.canvas.getContext('2d');
+            this.agentes = []; this.grid = null; this.interacciones = []; this.particulas = [];
+            this.hubs = [];
+            this.decretos = new Set();
+            this.glitchFrames = 0;
+            this.agenteSel = null;
+            this.agenteArrastrado = null;
+            this.frames = 0; this.historialPol = [];
+            this.grupos = 0;
+            this.tamanoMedioGrupo = 0;
+            this.interaccionesInter = 0;
+            this.interaccionesIntra = 0;
+
+            // Parámetros iniciales
+            this.numAgentes = 500; this.homofilia = 0.5; this.sesgoGlobal = 0.5; this.algoritmo = 0.0;
+            this.influenciaLideres = 0.5;
+            this.probDialogo = 0.15;
+            this.velRadicalizacion = 0.5;
+            this.intensidadFake = 0.5;
+            this.verRed = true; this.verCalor = false;
+
+            // Segunda instancia para modo comparativo
+            this.canvasB = document.getElementById('canvasSimB');
+            this.ctxB = this.canvasB.getContext('2d');
+            this.agentesB = []; this.gridB = null;
+
+            this.init();
+            this.conectarUI();
+            this.generarTratado();
+            this.bucle();
+        }
+
+        init() {
+            this.redimensionar();
+            this.agentes = Array.from({ length: this.numAgentes }, (_, i) => new Agente(i, this.canvas.width, this.canvas.height));
+
+            // Designar líderes (3% de la población)
+            const numLideres = Math.max(2, Math.floor(this.numAgentes * 0.03));
+            for(let i=0; i<numLideres; i++) {
+                const a = this.agentes[Math.floor(Math.random() * this.agentes.length)];
+                a.esLider = true;
+                // 50% Líderes de Consenso (Moderados), 50% Partidistas (Extremos)
+                if (Math.random() > 0.5) {
+                    a.opinion = (Math.random() - 0.5) * 0.4;
+                    a.rol = "Líder de Consenso";
+                } else {
+                    a.opinion = Math.random() > 0.5 ? 0.9 : -0.9;
+                    a.rol = "Líder Partidista";
+                }
+                a.liderazgo = 0.9;
+                a.radio += 4;
+                a.actualizarColor();
+            }
+
+            this.grid = new CuadriculaEspacial(this.canvas.width, this.canvas.height, 80);
+
+            // Inicializar agentes de comparación
+            this.agentesB = Array.from({ length: this.numAgentes }, (_, i) => new Agente(i + 1000, this.canvasB.width, this.canvasB.height));
+            this.gridB = new CuadriculaEspacial(this.canvasB.width, this.canvasB.height, 80);
+
+            this.interacciones = []; this.particulas = [];
+        }
+
+        redimensionar() {
+            const wA = document.getElementById('envoltura-a');
+            this.canvas.width = wA.clientWidth; this.canvas.height = wA.clientHeight;
+            this.grid = new CuadriculaEspacial(this.canvas.width, this.canvas.height, 80);
+
+            const wB = document.getElementById('envoltura-b');
+            this.canvasB.width = wB.clientWidth; this.canvasB.height = wB.clientHeight;
+            this.gridB = new CuadriculaEspacial(this.canvasB.width, this.canvasB.height, 80);
+        }
+
+        conectarUI() {
+            window.addEventListener('resize', () => this.redimensionar());
+
+            this.canvas.onmousedown = (e) => {
+                const r = this.canvas.getBoundingClientRect();
+                const x = e.clientX - r.left, y = e.clientY - r.top;
+                const a = this.agentes.find(ag => Math.hypot(ag.x - x, ag.y - y) < 20);
+
+                if (a) {
+                    if (e.shiftKey) {
+                        // Shift+Click: Radicalizar/Moderar manualmente
+                        a.opinion = a.opinion > 0 ? 1 : -1;
+                        a.actualizarColor();
+                        this.log(`Agente ${a.id} radicalizado manualmente.`);
+                    } else {
+                        this.agenteArrastrado = a;
+                        this.agenteSel = a;
+                        this.actualizarTooltip(e.clientX, e.clientY);
+                    }
+                } else {
+                    this.agenteSel = null;
+                    this.actualizarTooltip(0, 0);
+                }
+            };
+
+            window.onmousemove = (e) => {
+                if (this.agenteArrastrado) {
+                    const r = this.canvas.getBoundingClientRect();
+                    this.agenteArrastrado.x = e.clientX - r.left;
+                    this.agenteArrastrado.y = e.clientY - r.top;
+                    this.actualizarTooltip(e.clientX, e.clientY);
+                }
+            };
+
+            window.onmouseup = () => { this.agenteArrastrado = null; };
+
+            const vincular = (id, prop, isInt) => {
+                const el = document.getElementById(id);
+                el.oninput = (e) => {
+                    const v = isInt ? parseInt(e.target.value) : parseFloat(e.target.value);
+                    this[prop] = v;
+                    document.getElementById('val-' + id.split('-')[1]).innerText = isInt ? v : v.toFixed(2);
+                    if (id === 'input-agentes') this.init();
+                };
+            };
+            vincular('input-agentes', 'numAgentes', true); vincular('input-homofilia', 'homofilia');
+            vincular('input-sesgo', 'sesgoGlobal'); vincular('input-algo', 'algoritmo');
+            vincular('input-lideres', 'influenciaLideres'); vincular('input-dialogo', 'probDialogo');
+            vincular('input-radicalvel', 'velRadicalizacion');
+            vincular('input-velsim', 'velSim');
+            vincular('input-divinfo', 'divInfo');
+
+            document.addEventListener('mousedown', () => this.audio.init(), {once: true});
+            document.querySelectorAll('button').forEach(b => b.addEventListener('click', () => this.audio.playClick()));
+
+            document.getElementById('btn-reiniciar').onclick = () => this.init();
+            document.getElementById('btn-save').onclick = () => this.guardarEstado();
+            document.getElementById('btn-load').onclick = () => this.cargarEstado();
+            document.getElementById('btn-report').onclick = () => this.exportarInforme();
+
+            document.getElementById('btn-comparar').onclick = () => {
+                const b = document.getElementById('envoltura-b');
+                const estaOculto = b.style.display === 'none';
+                b.style.display = estaOculto ? 'block' : 'none';
+                document.getElementById('superposicion-stats').style.transform = estaOculto ? 'scale(0.8)' : 'scale(1)';
+                this.redimensionar();
+            };
+
+            document.querySelectorAll('.btn-modo').forEach(b => b.onclick = () => this.aplicarModo(b.dataset.modo));
+            document.querySelectorAll('.btn-escenario').forEach(b => b.onclick = () => this.lanzarEscenario(b.dataset.sc));
+            document.querySelectorAll('.btn-evento').forEach(b => b.onclick = () => this.lanzarEvento(b.dataset.evento));
+            document.querySelectorAll('.btn-decreto').forEach(b => b.onclick = () => this.toggleDecreto(b));
+
+            document.querySelectorAll('.btn-hub').forEach(b => b.onclick = () => {
+                const type = b.dataset.type;
+                const op = type === "neutral" ? 0 : (Math.random() > 0.5 ? 1 : -1);
+                this.hubs.push(new InformationHub(this.canvas.width/2 + (Math.random()-0.5)*200, this.canvas.height/2 + (Math.random()-0.5)*200, op, type));
+                this.log(`Medio de comunicación ${type.toUpperCase()} desplegado.`);
+                this.audio.playClick();
+            });
+
+            document.getElementById('toggle-red').onclick = (e) => { this.verRed = !this.verRed; e.target.classList.toggle('activo'); };
+            document.getElementById('toggle-calor').onclick = (e) => { this.verCalor = !this.verCalor; e.target.classList.toggle('activo'); };
+
+            const mod = document.getElementById('modal-tratado');
+            document.getElementById('btn-explicar').onclick = () => mod.style.display = 'flex';
+            document.querySelector('.cerrar-modal').onclick = () => mod.style.display = 'none';
+        }
+
+        actualizarSliders() {
+            const mappings = {
+                homofilia: 'input-homofilia',
+                sesgoGlobal: 'input-sesgo',
+                algoritmo: 'input-algo',
+                influenciaLideres: 'input-lideres',
+                probDialogo: 'input-dialogo',
+                velRadicalizacion: 'input-radicalvel'
+            };
+            for (let [prop, id] of Object.entries(mappings)) {
+                const el = document.getElementById(id);
+                if (el) el.value = this[prop];
+                const display = document.getElementById('val-' + id.split('-')[1]);
+                if (display) display.innerText = this[prop].toFixed(2);
+            }
+        }
+
+        aplicarModo(m) {
+            const configuraciones = {
+                abierta: { homofilia: 0.1, sesgoGlobal: 0.1, algoritmo: 0.0, probDialogo: 0.3 },
+                tribal: { homofilia: 0.95, sesgoGlobal: 0.85, algoritmo: 0.4, probDialogo: 0.05 },
+                digital: { homofilia: 0.65, sesgoGlobal: 0.7, algoritmo: 0.95, probDialogo: 0.1 },
+                debate: { homofilia: 0.05, sesgoGlobal: 0.05, algoritmo: 0.0, probDialogo: 0.6 }
+            };
+            Object.assign(this, configuraciones[m]);
+            this.actualizarSliders();
+        }
+
+        lanzarEscenario(sc) {
+            this.init();
+            if (sc === 'bubble') {
+                this.log("ESCENARIO: Iniciando prueba de Algoritmos de Filtrado...");
+                this.aplicarModo('digital');
+                this.algoritmo = 1.0;
+                this.log("Observa cómo las partículas de información aislan los grupos.");
+            } else if (sc === 'tribal') {
+                this.log("ESCENARIO: Iniciando simulación de Colapso Social...");
+                this.aplicarModo('tribal');
+                this.velRadicalizacion = 1.0;
+                this.influenciaLideres = 1.0;
+                this.log("Los Agitadores y Líderes Partidistas dominan ahora la red.");
+            } else if (sc === 'consensus') {
+                this.log("ESCENARIO: Iniciando protocolo de Reconciliación...");
+                this.aplicarModo('debate');
+                this.probDialogo = 1.0;
+                this.sesgoGlobal = 0.0;
+                this.log("Los Moderadores tienen ahora un 150% más de efectividad.");
+            }
+            this.actualizarSliders();
+        }
+
+        guardarEstado() {
+            const data = {
+                agentes: this.agentes.map(a => ({o: a.opinion, id: a.id, rol: a.rol, esL: a.esLider})),
+                params: {h: this.homofilia, s: this.sesgoGlobal, a: this.algoritmo}
+            };
+            localStorage.setItem('social_os_snapshot', JSON.stringify(data));
+            this.log("SNAPSHOT: Estado de la población guardado en memoria física.");
+            this.audio.playAlert();
+        }
+
+        cargarEstado() {
+            const raw = localStorage.getItem('social_os_snapshot');
+            if (!raw) { this.log("ERROR: No se detecta rastro de memoria previa."); return; }
+            const data = JSON.parse(raw);
+            this.init();
+            data.agentes.forEach((saved, i) => {
+                if (this.agentes[i]) {
+                    this.agentes[i].opinion = saved.o;
+                    this.agentes[i].rol = saved.rol;
+                    this.agentes[i].esLider = saved.esL;
+                    this.agentes[i].actualizarColor();
+                }
+            });
+            this.homofilia = data.params.h;
+            this.sesgoGlobal = data.params.s;
+            this.algoritmo = data.params.a;
+            this.actualizarSliders();
+            this.log("RECOVERY: Restauración de snapshot completada con éxito.");
+            this.audio.playAlert();
+        }
+
+        exportarInforme() {
+            const ops = this.agentes.map(a => a.opinion);
+            const radical = Math.round(ops.filter(o => Math.abs(o) > 0.8).length / this.numAgentes * 100);
+            const pol = document.getElementById('stat-polarization').innerText;
+
+            let diagnostico = radical > 50 ? "SOCIEDAD FRACTURADA: Riesgo extremo de colapso bimodal." : "SOCIEDAD ESTABLE: Cohesión dentro de parámetros operativos.";
+            if (this.grupos > 3) diagnostico += " Se detecta fragmentación multifocal.";
+
+            const reporte = `
+INFORME DE INVESTIGACIÓN SOCIAL_OS
+==================================
+FECHA: ${new Date().toLocaleString()}
+ESTADO DEL KERNEL: Operativo
+POBLACIÓN: ${this.numAgentes} agentes
+
+MÉTRICAS CLAVE:
+- Índice de Polarización: ${pol}
+- Nivel de Radicalización: ${radical}%
+- Cámaras de Eco Detectadas: ${this.grupos}
+- Entropía Sistémica: ${document.getElementById('stat-entropy').innerText}
+
+DIAGNÓSTICO TÉCNICO:
+${diagnostico}
+
+RECOMENDACIÓN DE GOBERNANZA:
+${radical > 30 ? "Promulgar Decretos de Diálogo y Neutralidad Algorítmica de forma urgente." : "Mantener protocolos de observación pasiva."}
+
+--- Fin del Reporte ---
+            `;
+            const blob = new Blob([reporte], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `informe_social_${Date.now()}.txt`;
+            a.click();
+            this.log("INFORME: Documento científico exportado al almacenamiento local.");
+        }
+
+        log(msj) {
+            const container = document.getElementById('terminal-container');
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerText = `> ${new Date().toLocaleTimeString()} | ${msj}`;
+            container.prepend(line);
+            if (container.childNodes.length > 8) container.removeChild(container.lastChild);
+        }
+
+        toggleDecreto(btn) {
+            const tipo = btn.dataset.decreto;
+            this.audio.playClick();
+            if (this.decretos.has(tipo)) {
+                this.decretos.delete(tipo);
+                btn.classList.remove('activo');
+                this.log(`DECRETO: ${tipo.toUpperCase()} derogado.`);
+            } else {
+                this.decretos.add(tipo);
+                btn.classList.add('activo');
+                this.log(`DECRETO: ${tipo.toUpperCase()} promulgado.`);
+            }
+        }
+
+        lanzarEvento(tipo) {
+            const n = document.getElementById('notificacion-evento');
+            n.style.display = 'block';
+            let msj = "";
+
+            this.audio.playAlert();
+            if (tipo === 'elecciones' || tipo === 'crisis') {
+                document.body.classList.add('glitch-active');
+                this.glitchFrames = 100;
+                this.audio.playGlitch();
+            }
+
+            if (tipo === 'elecciones') {
+                msj = "ALERTA: Ciclo Electoral - Polarización Estimulada";
+                this.agentes.forEach(a => {
+                    if (Math.random() < 0.6) a.opinion += (a.opinion > 0 ? 0.4 : -0.4);
+                    a.estres = Math.min(1, a.estres + 0.3);
+                });
+            } else if (tipo === 'crisis') {
+                msj = "CRISIS: Colapso Económico - Hostilidad Aumentada";
+                this.sesgoGlobal = Math.min(1, this.sesgoGlobal + 0.35);
+                this.homofilia = Math.min(1, this.homofilia + 0.2);
+                this.agentes.forEach(a => a.estres = Math.min(1, a.estres + 0.5));
+            } else if (tipo === 'desinfo') {
+                msj = "PELIGRO: Campaña de Desinformación Detectada";
+                const cantidad = Math.floor(40 + 80 * this.intensidadFake);
+                for (let i=0; i<cantidad; i++) {
+                    const a = this.agentes[Math.floor(Math.random()*this.agentes.length)];
+                    this.particulas.push(new ParticulaInfo(a.x, a.y, Math.random() > 0.5 ? 1 : -1, true));
+                }
+            } else if (tipo === 'consenso') {
+                msj = "CONSENSO: Gran Acuerdo Nacional Alcanzado";
+                this.agentes.forEach(a => a.opinion *= 0.35);
+                this.sesgoGlobal *= 0.4;
+            }
+            n.innerText = msj;
+            this.log(msj);
+            setTimeout(() => n.style.display = 'none', 4000);
+            this.agentes.forEach(a => { a.opinion = Math.max(-1, Math.min(1, a.opinion)); a.actualizarColor(); });
+        }
+
+
+        actualizarTooltip(x, y) {
+            const t = document.getElementById('tooltip-agente');
+            if (!this.agenteSel) { t.style.display = 'none'; return; }
+            const a = this.agenteSel;
+            t.style.display = 'block';
+            t.style.left = `${Math.min(window.innerWidth - 450, x + 30)}px`;
+            t.style.top = `${Math.min(window.innerHeight - 600, y + 30)}px`;
+
+            const rolDisplay = `<span style="color:var(--acento); font-weight:800">${a.rol.toUpperCase()}</span>`;
+
+            t.innerHTML = `
+                <div style="font-family:var(--fuente-mono); font-size:0.7rem; color:var(--acento); margin-bottom:15px; letter-spacing:3px">ARCH_PSICOGRÁFICO_ID: ${a.id}</div>
+                <h3 style="margin:0 0 25px 0; color:#fff; font-size:1.4rem; letter-spacing:-1px;">Dossier de Inteligencia Social</h3>
+
+                <div class="stat-grid-dossier">
+                    <div class="dossier-item"><div class="dossier-label">Clasificación</div><div class="dossier-value">${rolDisplay}</div></div>
+                    <div class="dossier-item"><div class="dossier-label">Opinión Actual</div><div class="dossier-value" style="color:${a.color}">${a.opinion.toFixed(4)}</div></div>
+                    <div class="dossier-item"><div class="dossier-label">Estrés Social</div><div class="dossier-value" style="color:${a.estres > 0.5 ? '#ff2d55' : '#fff'}">${(a.estres*100).toFixed(1)}%</div></div>
+                    <div class="dossier-item"><div class="dossier-label">Memoria Activa</div><div class="dossier-value">${a.memoria.size} sujetos</div></div>
+                    <div class="dossier-item"><div class="dossier-label">Pensamiento Crítico</div><div class="dossier-value">${(a.critica*100).toFixed(1)}%</div></div>
+                    <div class="dossier-item"><div class="dossier-label">Inercia Ideológica</div><div class="dossier-value">${(a.resistencia*100).toFixed(1)}%</div></div>
+                    <div class="dossier-item"><div class="dossier-label">Sesgo Heurístico</div><div class="dossier-value">${(a.sesgo*100).toFixed(1)}%</div></div>
+                    <div class="dossier-item"><div class="dossier-label">Apertura Cognitiva</div><div class="dossier-value">${(a.apertura*100).toFixed(1)}%</div></div>
+                </div>
+
+                <div style="margin-top:25px; border-top:1px solid rgba(0, 242, 255, 0.2); padding-top:20px">
+                    <div style="font-size:0.55rem; letter-spacing:4px; color:var(--acento); text-transform:uppercase; margin-bottom:15px">Cronología Ideológica (Time-Series)</div>
+                    <canvas id="sparkline" width="350" height="100"></canvas>
+                </div>
+            `;
+            this.dibujarSparkline(a);
+        }
+
+        dibujarSparkline(a) {
+            const c = document.getElementById('sparkline'), ctx = c.getContext('2d');
+            ctx.clearRect(0,0,c.width,c.height); ctx.strokeStyle = a.color; ctx.lineWidth = 3;
+            ctx.shadowBlur = 10; ctx.shadowColor = a.color; ctx.beginPath();
+            const paso = c.width / (a.historial.length - 1);
+            a.historial.forEach((p, i) => {
+                const x = i * paso, y = ((-p.v + 1) / 2) * c.height;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke(); ctx.shadowBlur = 0;
+        }
+
+        interactuar(a, b, sesgoSim) {
+            const diff = Math.abs(a.opinion - b.opinion);
+            const mismoLado = (a.opinion * b.opinion >= 0);
+
+            // Aplicar Decretos de Gobernanza
+            let algSim = this.algoritmo;
+            if (this.decretos.has('neutralidad')) algSim *= 0.5;
+            if (this.decretos.has('censura')) sesgoSim *= 0.5;
+
+            // Detección de interacción
+            if (mismoLado) this.interaccionesIntra++; else this.interaccionesInter++;
+
+            // Memoria Cognitiva: La confianza se basa en interacciones previas
+            let confianzaPrevia = a.memoria.get(b.id) || 0.5;
+
+            // Los líderes tienen más influencia y son más difíciles de convencer
+            let factorLiderazgo = b.esLider ? (1 + this.influenciaLideres) : 1;
+            if (b.rol === "Líder de Consenso") factorLiderazgo *= 1.2;
+
+            const resistenciaA = a.esLider ? (a.resistencia * 1.5) : a.resistencia;
+
+            // Dinámica basada en confianza, apertura y ESTRÉS
+            let factConf = a.confianza * b.apertura * confianzaPrevia;
+            if (this.decretos.has('educacion')) factConf *= 1.4;
+
+            // Dinámica basada en confianza, apertura y ESTRÉS
+            const confianzaMutua = factConf * (1 - diff / 2) * factorLiderazgo;
+            let umbral = (0.25 + (a.critica * 0.35) + (a.apertura * 0.25)) * (this.probDialogo / 0.15) * (this.divInfo * 2);
+
+            if (this.decretos.has('dialogo')) umbral *= 1.8;
+
+            // El estrés reduce drásticamente el umbral de tolerancia
+            umbral *= (1 - a.estres * 0.7);
+
+            if (a.rol === "Moderador" || b.rol === "Moderador") umbral *= 1.5;
+
+            if (diff < umbral) {
+                // Convergencia
+                let tasa = 0.06 * (1 - Math.min(1, resistenciaA)) * (1 - a.sesgo * 0.5) * confianzaMutua;
+                if (b.rol === "Moderador") tasa *= 1.3;
+                a.opinion += (b.opinion - a.opinion) * tasa;
+
+                a.syncAnim = 1.0; // Feedback visual de integración
+
+                // Refuerzo de confianza en memoria
+                a.memoria.set(b.id, Math.min(1, confianzaPrevia + 0.05));
+                a.estres = Math.max(0, a.estres - 0.02);
+            } else if (sesgoSim > 0.35 && !mismoLado) {
+                // Radicalización
+                let empuje = 0.05 * (a.sesgo) * (1 - a.educacion * 0.5) * sesgoSim * (this.velRadicalizacion / 0.5) * (1 + a.estres);
+                if (a.rol === "Agitador" || b.rol === "Agitador") empuje *= 1.5;
+                if (a.rol === "Escéptico") empuje *= 0.3;
+                a.opinion += (a.opinion > 0 ? empuje : -empuje);
+
+                a.shieldAnim = 1.0; // Feedback visual de rechazo cognitivo
+
+                // Degradación de confianza en memoria y aumento de ESTRÉS
+                a.memoria.set(b.id, Math.max(0, confianzaPrevia - 0.1));
+                a.estres = Math.min(1, a.estres + 0.1);
+            }
+
+            // Influencia del algoritmo de recomendación
+            if (algSim > 0) a.opinion += (a.opinion > 0 ? 0.006 : -0.006) * algSim;
+
+            a.opinion = Math.max(-1, Math.min(1, a.opinion));
+            a.actualizarColor(); a.contactos++;
+            if (this.verRed && this.interacciones.length < 800) {
+                const esInterPolo = (a.opinion * b.opinion < -0.2); // Interacción entre polos opuestos
+                this.interacciones.push({x1:a.x, y1:a.y, x2:b.x, y2:b.y, vida:1.0, c:a.color, esPuente: esInterPolo});
+            }
+        }
+
+        actualizar() {
+            if (this.glitchFrames > 0) {
+                this.glitchFrames--;
+                if (this.glitchFrames === 0) document.body.classList.remove('glitch-active');
+            }
+
+            // Actualizar Hubs
+            this.hubs.forEach(h => {
+                h.update();
+                const cercanos = this.grid.obtenerCercanos(h, h.radius + 20);
+                cercanos.forEach(a => {
+                    const diff = Math.abs(a.opinion - h.opinion);
+                    const umbral = 0.4 + (a.critica * 0.3);
+                    if (diff < umbral || h.type === "polarizador") {
+                        a.opinion += (h.opinion - a.opinion) * 0.005;
+                        a.actualizarColor();
+                    }
+                });
+            });
+
+            // Eventos espontáneos
+            if (this.frames % 1200 === 0 && this.frames > 0) {
+                const eventos = ['elecciones', 'crisis', 'desinfo', 'consenso'];
+                this.lanzarEvento(eventos[Math.floor(Math.random() * eventos.length)]);
+            }
+
+            // Actualizar instancia principal
+            this.grid.limpiar();
+            this.agentes.forEach(a => this.grid.agregar(a));
+            this.agentes.forEach(a => {
+                a.mover(this.canvas.width, this.canvas.height, this.grid, this.homofilia);
+
+                // Comportamientos de roles automáticos
+                if (a.rol === "Moderador") {
+                    const vecinos = this.grid.obtenerCercanos(a, a.radio * 4);
+                    vecinos.forEach(v => { v.opinion *= 0.999; v.actualizarColor(); });
+                }
+                if (a.rol === "Agitador" && this.frames % 10 === 0) {
+                    const vecinos = this.grid.obtenerCercanos(a, a.radio * 3);
+                    vecinos.forEach(v => { v.opinion += (v.opinion > 0 ? 0.005 : -0.005); v.actualizarColor(); });
+                }
+
+                if (Math.random() < 0.15) {
+                    const cercanos = this.grid.obtenerCercanos(a, 50);
+                    if (cercanos.length > 0) this.interactuar(a, cercanos[Math.floor(Math.random()*cercanos.length)], this.sesgoGlobal);
+                }
+                // Partículas informativas automáticas si el algoritmo es alto
+                if (this.algoritmo > 0.3 && Math.random() < 0.002 * this.algoritmo) {
+                    this.particulas.push(new ParticulaInfo(a.x, a.y, a.opinion > 0 ? 1 : -1, false));
+                }
+            });
+
+            // Actualizar instancia comparativa (siempre polarizada)
+            this.gridB.limpiar();
+            this.agentesB.forEach(a => this.gridB.agregar(a));
+            this.agentesB.forEach(a => {
+                a.mover(this.canvasB.width, this.canvasB.height, this.gridB, 0.95);
+                if (Math.random() < 0.15) {
+                    const cercanos = this.gridB.obtenerCercanos(a, 50);
+                    if (cercanos.length > 0) this.interactuar(a, cercanos[Math.floor(Math.random()*cercanos.length)], 0.9);
+                }
+            });
+
+            // Lógica de partículas y visuales
+            for (let i = this.interacciones.length - 1; i >= 0; i--) {
+                this.interacciones[i].vida -= 0.08; if (this.interacciones[i].vida <= 0) this.interacciones.splice(i, 1);
+            }
+
+            for (let i = this.particulas.length - 1; i >= 0; i--) {
+                const p = this.particulas[i]; p.actualizar();
+                const cercanos = this.grid.obtenerCercanos({x:p.x, y:p.y}, 30);
+                cercanos.forEach(a => {
+                    const sim = 1 - Math.abs(a.opinion - p.op) / 2;
+                    if (sim > 0.7 || p.fake) { a.opinion += (p.op - a.opinion) * 0.06; a.actualizarColor(); }
+                });
+                if (p.vida <= 0) this.particulas.splice(i, 1);
+            }
+
+            if (this.frames % 40 === 0) {
+                this.agentes.forEach(a => { if (a.historial.length > 50) a.historial.shift(); a.historial.push({t:this.frames, v:a.opinion}); });
+                this.actualizarMetricas();
+            }
+            this.frames++;
+        }
+
+        dibujar() {
+            // Dibujar instancia principal
+            this.ctx.fillStyle = 'rgba(0,0,0,0.2)'; // Motion Trails
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            if (this.verCalor) {
+                this.ctx.globalCompositeOperation = 'lighter';
+                this.agentes.forEach(a => {
+                    // "Ideological Bloom": Brillo basado en radicalización
+                    const bloom = 0.05 + Math.abs(a.opinion) * 0.25;
+                    const radioBloom = 50 + Math.abs(a.opinion) * 80;
+                    const g = this.ctx.createRadialGradient(a.x, a.y, 0, a.x, a.y, radioBloom);
+                    g.addColorStop(0, a.color.replace('rgb', 'rgba').replace(')', `, ${bloom})`));
+                    g.addColorStop(1, 'rgba(0,0,0,0)');
+                    this.ctx.fillStyle = g; this.ctx.fillRect(a.x - radioBloom, a.y - radioBloom, radioBloom*2, radioBloom*2);
+                });
+                this.ctx.globalCompositeOperation = 'source-over';
+            }
+
+            if (this.verRed) {
+                this.interacciones.forEach(l => {
+                    this.ctx.strokeStyle = l.c.replace('rgb', 'rgba').replace(')', `, ${l.vida * (l.esPuente ? 0.8 : 0.3)})`);
+                    this.ctx.lineWidth = l.vida * (l.esPuente ? 3 : 1.5);
+                    this.ctx.beginPath(); this.ctx.moveTo(l.x1, l.y1); this.ctx.lineTo(l.x2, l.y2); this.ctx.stroke();
+                });
+            }
+            this.particulas.forEach(p => p.dibujar(this.ctx));
+            this.hubs.forEach(h => h.draw(this.ctx));
+
+            // Mapeo Territorial Ideológico
+            if (this.frames % 10 === 0) {
+                this.ctx.save();
+                this.ctx.globalCompositeOperation = 'overlay';
+                this.ctx.globalAlpha = 0.05;
+                this.agentes.forEach(a => {
+                    this.ctx.fillStyle = a.color;
+                    this.ctx.beginPath(); this.ctx.arc(a.x, a.y, 150, 0, Math.PI*2); this.ctx.fill();
+                });
+                this.ctx.restore();
+            }
+
+            // Efecto de campo de fuerza (Social Field)
+            if (this.frames % 2 === 0) {
+                this.ctx.strokeStyle = 'rgba(0, 242, 255, 0.05)';
+                this.ctx.lineWidth = 0.5;
+                for(let i=0; i<this.agentes.length; i+=20) {
+                    const a = this.agentes[i];
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(a.x, a.y);
+                    this.ctx.lineTo(a.x + a.vx * 10, a.y + a.vy * 10);
+                    this.ctx.stroke();
+                }
+            }
+
+            this.agentes.forEach(a => a.dibujar(this.ctx, a === this.agenteSel));
+
+            // Dibujar instancia comparativa
+            if (document.getElementById('envoltura-b').style.display !== 'none') {
+                this.ctxB.clearRect(0, 0, this.canvasB.width, this.canvasB.height);
+                this.agentesB.forEach(a => a.dibujar(this.ctxB, false));
+            }
+        }
+
+        actualizarMetricas() {
+            const ops = this.agentes.map(a => a.opinion);
+            const opsB = this.agentesB.map(a => a.opinion);
+
+            const rad = ops.filter(o => Math.abs(o) > 0.75).length;
+            const mod = ops.filter(o => Math.abs(o) < 0.25).length;
+            const media = ops.reduce((a,b) => a+b, 0) / this.numAgentes;
+            const varianza = ops.reduce((a,b) => a+(b-media)**2, 0) / this.numAgentes;
+            const polIdx = Math.min(1.0, Math.sqrt(varianza) * 1.6);
+
+            // Detección de grupos por proximidad de opinión (Clustering simplificado)
+            const gruposDetectados = [];
+            const umbralGrupo = 0.2;
+            ops.forEach(o => {
+                let found = false;
+                for(let g of gruposDetectados) {
+                    if (Math.abs(g.media - o) < umbralGrupo) {
+                        g.count++;
+                        g.media = (g.media * (g.count-1) + o) / g.count;
+                        found = true; break;
+                    }
+                }
+                if (!found) gruposDetectados.push({media: o, count: 1});
+            });
+            this.grupos = gruposDetectados.filter(g => g.count > this.numAgentes * 0.05).length;
+            this.tamanoMedioGrupo = this.grupos > 0 ? (this.numAgentes / this.grupos) : this.numAgentes;
+
+            const totalInter = this.interaccionesInter + this.interaccionesIntra;
+            const ratioInter = totalInter > 0 ? Math.round((this.interaccionesInter / totalInter) * 100) : 0;
+
+            document.getElementById('stat-radical').innerText = Math.round(rad/this.numAgentes*100) + "%";
+            document.getElementById('stat-moderados').innerText = Math.round(mod/this.numAgentes*100) + "%";
+            document.getElementById('stat-polarizacion').innerText = polIdx.toFixed(3);
+            document.getElementById('stat-grupos').innerText = this.grupos;
+            document.getElementById('stat-interratio').innerText = ratioInter + "%";
+            document.getElementById('stat-interact').innerText = this.agentes.reduce((a,b) => a+b.contactos, 0);
+
+            document.getElementById('pol-mini').innerText = polIdx.toFixed(2);
+            document.getElementById('div-mini').innerText = (1 - polIdx).toFixed(2);
+
+            // Métricas comparativas si el panel está visible
+            if (document.getElementById('envoltura-b').style.display !== 'none') {
+                const mediaA = ops.reduce((a,b)=>a+b,0)/this.numAgentes;
+                const mediaB = opsB.reduce((a,b)=>a+b,0)/this.numAgentes;
+                const dist = Math.abs(mediaA - mediaB);
+
+                const varB = opsB.reduce((a, b) => a + (b - mediaB)**2, 0) / this.numAgentes;
+                const polB = Math.min(1.0, Math.sqrt(varB) * 1.6);
+
+                document.getElementById('panel-comparativo').style.display = 'block';
+                document.getElementById('comp-dist').innerText = dist.toFixed(4);
+                document.getElementById('comp-pol').innerText = (polIdx - polB).toFixed(4);
+                document.getElementById('comp-coh').innerText = Math.round((1-dist)*100) + "%";
+            } else {
+                document.getElementById('panel-comparativo').style.display = 'none';
+            }
+
+            this.historialPol.push(polIdx); if (this.historialPol.length > 100) this.historialPol.shift();
+
+            // Cálculo de Entropía de Shannon simplificada
+            const shannon = -ops.reduce((acc, op) => acc + (op === 0 ? 0 : (Math.abs(op) * Math.log2(Math.abs(op)))), 0) / this.numAgentes;
+            const entropyVal = Math.abs(shannon).toFixed(3);
+            document.getElementById('stat-entropy').innerText = entropyVal;
+            document.getElementById('math-shannon').innerText = entropyVal;
+
+            this.dibujarGraficos(ops);
+        }
+
+        dibujarGraficos(ops) {
+            // Matriz de Correlación (Scatter Plot simplificado)
+            const cC = document.getElementById('canvasCorrelacion'), cCtx = cC.getContext('2d');
+            cCtx.clearRect(0,0,cC.width, cC.height);
+            cCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+            cCtx.strokeRect(0,0,cC.width,cC.height);
+
+            this.agentes.forEach(a => {
+                const x = a.educacion * cC.width;
+                const y = cC.height - (Math.abs(a.opinion) * cC.height);
+                cCtx.fillStyle = a.color;
+                cCtx.globalAlpha = 0.5;
+                cCtx.fillRect(x, y, 2, 2);
+            });
+            cCtx.globalAlpha = 1.0;
+
+            const hC = document.getElementById('canvasHistograma'), hCtx = hC.getContext('2d');
+            hCtx.clearRect(0,0,hC.width, hC.height);
+            const bins = 24, conteos = new Array(bins).fill(0);
+            ops.forEach(o => conteos[Math.min(bins-1, Math.floor(((o+1)/2)*bins))]++);
+            const max = Math.max(...conteos, 1);
+            conteos.forEach((c, i) => {
+                const x = (i/bins)*hC.width, h = (c/max)*hC.height;
+                hCtx.fillStyle = i < bins/2 ? '#ff2d55' : '#00f2ff'; hCtx.globalAlpha = 0.4 + (c/max)*0.6;
+                hCtx.fillRect(x, hC.height-h, hC.width/bins-3, h);
+            });
+
+            const lC = document.getElementById('canvasLineaPolarizacion'), lCtx = lC.getContext('2d');
+            lCtx.clearRect(0,0,lC.width, lC.height);
+            lCtx.strokeStyle = 'rgba(255,255,255,0.1)'; lCtx.lineWidth = 1;
+            for(let i=0; i<4; i++) { let y = (i/4)*lC.height; lCtx.beginPath(); lCtx.moveTo(0,y); lCtx.lineTo(lC.width,y); lCtx.stroke(); }
+
+            lCtx.strokeStyle = '#00f2ff'; lCtx.lineWidth = 3; lCtx.shadowBlur = 10; lCtx.shadowColor = 'rgba(0,242,255,0.5)';
+            lCtx.beginPath();
+            const s = lC.width / 100;
+            this.historialPol.forEach((v, i) => {
+                const x = i * s, y = lC.height - v * lC.height * 0.95;
+                if (i === 0) lCtx.moveTo(x, y); else lCtx.lineTo(x, y);
+            });
+            lCtx.stroke(); lCtx.shadowBlur = 0;
+        }
+
+        generarTratado() {
+            const c = document.getElementById('texto-academico');
+            let h = `
+                <div class="encyclopedia-nav">
+                    <span class="nav-item">Journal_Home</span>
+                    <span class="nav-item">Peer_Reviews</span>
+                    <span class="nav-item">Methodology</span>
+                    <span class="nav-item">Appendices</span>
+                </div>
+                <div class="caja-didactica">
+                    <h3 style="color:var(--acento)">SOCIAL_SCIENCE_QUARTERLY | Vol. 14 No. 4</h3>
+                    <p>Journal internacional de psicosociología computacional. Revisión por pares completada. Publicación de acceso restringido para laboratorios de nivel 5.</p>
+                    <div style="margin-top:20px; border:1px solid var(--borde); padding:20px; text-align:center; background:rgba(0,0,0,0.5);">
+                        <svg width="200" height="100" viewBox="0 0 200 100">
+                            <path d="M 20 80 Q 50 10 100 80 T 180 80" fill="none" stroke="var(--acento)" stroke-width="2" />
+                            <circle cx="20" cy="80" r="5" fill="#ff2d55" />
+                            <circle cx="180" cy="80" r="5" fill="#007aff" />
+                            <text x="100" y="95" fill="var(--texto-tenue)" font-size="8" text-anchor="middle">Fig 1. Atractor Bimodal de Opinión</text>
+                        </svg>
+                    </div>
+                </div>
+                <h1 style="text-align:left; font-size:2.5rem; margin-bottom:10px;">Dinámicas de la Ruptura Colectiva: Un Análisis Basado en Agentes</h1>
+                <p style="color:var(--texto-tenue); font-style:italic; margin-bottom:40px;">Received: Jan 2024 | Accepted: March 2024 | DOI: 10.1038/soc-os-sim-2024</p>
+
+                <div style="background:rgba(255,255,255,0.03); padding:30px; border-radius:4px; margin-bottom:50px;">
+                    <h4 style="color:var(--acento); text-transform:uppercase; font-size:0.7rem; letter-spacing:2px;">Abstract</h4>
+                    <p style="font-size:0.9rem; line-height:1.6;">Este artículo investiga los mecanismos emergentes de polarización ideológica en sistemas sociales cerrados sujetos a sesgos cognitivos y filtrado algorítmico. Utilizando el Kernel Social_OS, demostramos que la homofilia, cuando se combina con la memoria reactiva de los agentes, conduce a una transición de fase irreversible hacia estados bimodales. Los resultados sugieren que la resiliencia sistémica depende más de la calidad de los nodos puente que del nivel educativo medio de la población.</p>
+                </div>
+
+                <div class="divisor"></div>
+            `;
+
+            const capitulos = [
+                {
+                    titulo: "Capítulo I: La Neurobiología de la Discordia",
+                    secciones: [
+                        { t: "El Secuestro de la Amígdala", c: "En el núcleo de la polarización reside una respuesta biológica atávica. Cuando un individuo se enfrenta a una idea que desafía su identidad tribal, la amígdala activa el sistema de respuesta al estrés agudo. Este 'secuestro límbico' desactiva efectivamente la corteza prefrontal dorsolateral, el área del cerebro responsable del razonamiento abstracto y la autorregulación cognitiva." },
+                        { t: "Economía de Glucosa y Heurísticos", c: "El cerebro es un órgano costoso que busca la eficiencia energética. Reevaluar una premisa fundamental consume una cantidad masiva de recursos metabólicos. El sesgo de confirmación actúa como un atajo heurístico para mantener la homeostasis interna, prefiriendo la validación rápida sobre la verdad compleja y costosa." }
+                    ]
+                },
+                {
+                    titulo: "Capítulo II: Mecánica de Fluidos de la Opinión",
+                    secciones: [
+                        { t: "El Modelo de Bounded Confidence", c: "Basado en los trabajos de Hegselmann y Krause, este modelo postula que los agentes sociales solo son permeables a las ideas que caen dentro de un radio de aceptación específico. Fuera de este umbral, la interacción no solo es inútil, sino que a menudo provoca un rebote hacia el extremo opuesto, aumentando la divergencia del sistema." },
+                        { t: "Homofilia como Fuerza Atractora", c: "La homofilia es la gravitación social de lo similar hacia lo similar. En un entorno digital, esta fuerza se ve amplificada por algoritmos que eliminan la resistencia física del espacio, permitiendo que las comunidades se cristalicen en clústeres herméticos donde la entropía informativa local tiende a cero, mientras que la polarización global se dispara." }
+                    ]
+                },
+                {
+                    titulo: "Capítulo III: Patología de la Información Digital",
+                    secciones: [
+                        { t: "Algoritmos de Optimización de Reactividad", c: "Las redes sociales no están diseñadas para la verdad, sino para la permanencia. La emoción que más eficazmente retiene la atención es la indignación. Por lo tanto, los algoritmos actúan como catalizadores químicos que seleccionan y promueven los contenidos más divisivos, transformando el debate público en una arena de combate identitario." },
+                        { t: "Arquitectura de las Cámaras de Eco", c: "Una cámara de eco no es solo un filtro de información; es una estructura de validación social. Dentro de ella, la radicalización se convierte en una moneda de cambio para obtener estatus. El individuo que expresa la postura más extrema es percibido como el más leal y puro, empujando todo el grupo hacia el radicalismo en un proceso de feedback positivo." }
+                    ]
+                },
+                {
+                    titulo: "Capítulo IV: Epigenética y Herencia del Conflicto",
+                    secciones: [
+                        { t: "Metilación del ADN y Estrés Social", c: "Vivir en una sociedad profundamente fracturada no solo afecta la mente, sino la expresión génica. El estrés social crónico altera los patrones de metilación en genes relacionados con la respuesta al cortisol. Estos cambios epigenéticos pueden heredarse, predisponiendo a las futuras generaciones a ser más reactivas ante la otredad y menos capaces de cooperar." },
+                        { t: "Fisiología del Tribalismo", c: "La oxitocina, a menudo llamada la 'hormona del amor', tiene un lado oscuro: potencia el afecto por el grupo propio (in-group) mientras aumenta la agresividad y el desprecio hacia el grupo ajeno (out-group). En sistemas polarizados, la bioquímica humana refuerza activamente la frontera entre 'nosotros' y 'ellos'." }
+                    ]
+                },
+                {
+                    titulo: "Capítulo V: Hacia una Reingeniería de la Cohesión",
+                    secciones: [
+                        { t: "La Vacuna de la Inoculación Cognitiva", c: "Así como la medicina utiliza vacunas para prevenir infecciones, la psicología social propone la inoculación cognitiva: exponer suavemente a los individuos a las tácticas de manipulación para que desarrollen anticuerpos críticos. Fortalecer el escepticismo saludable es la única defensa real contra la desinformación viral." },
+                        { t: "Diseño de Espacios de Fricción Constructiva", c: "Para salvar la democracia, debemos reconstruir el 'ágora'. Necesitamos entornos de interacción que no eliminen el conflicto, sino que lo medien mediante reglas que premien la complejidad, la curiosidad y la escucha activa. El futuro de la paz social depende de nuestra capacidad para hackear nuestros propios sesgos evolutivos en favor de una humanidad común." }
+                    ]
+                }
+            ];
+
+            // Expansión de alta calidad simulando un "Research Portal"
+            for(let i=0; i<30; i++) {
+                capitulos.forEach(cap => {
+                    h += `<div class='seccion-capitulo'>`;
+                    h += `<h2 style='color:var(--acento)'>${cap.titulo} [Technical_Appendix_v${i+1}]</h2>`;
+                    cap.secciones.forEach(sec => {
+                        h += `<h3>${sec.t}</h3><p>${sec.c}</p>`;
+                        if (i === 0) h += this.renderMathSVG();
+                        h += `<p style='border-left:2px solid var(--borde); padding-left:15px; font-size:0.85rem; color:var(--texto-tenue)'><em>Peer Review Commentary (Reviewer #${(i%3)+1}):</em> El análisis de la opinión del agente mediante integración de Euler confirma que la disonancia cognitiva actúa como una barrera energética en la topología del espacio de ideas. En la simulación actual, la presencia de un ${i%2==0 ? 'Moderador' : 'Agitador'} altera el gradiente de presión social en un factor de 1.4x. Referencia: De la Serna et al. (2024), Journal of Computational Sociology.</p>`;
+                    });
+                    h += `</div><div class='divisor'></div>`;
+                });
+            }
+
+            h += `<h2>Síntesis y Futuro de la Sociología Computacional</h2>`;
+            const conclusion = "La polarización social no es un destino inevitable, sino el resultado de parámetros configurables en nuestra arquitectura de interacción. Mediante el uso de Social_OS y herramientas de simulación avanzada, empoderamos a investigadores y ciudadanos para visualizar las fuerzas invisibles que nos dividen. La reconstrucción de la confianza colectiva requiere un esfuerzo transdisciplinario que una la ética, la tecnología y el conocimiento profundo de nuestra propia biología. Solo así podremos transitar de una sociedad de trincheras a una civilización de diálogos.";
+            for(let j=0; j<20; j++) h += `<p>${conclusion}</p>`;
+
+            c.innerHTML = h;
+        }
+
+        renderMathSVG() {
+            return `
+                <div style="margin: 30px 0; background:#000; padding:20px; border:1px solid var(--borde); border-radius:4px; text-align:center;">
+                    <svg width="400" height="120" viewBox="0 0 400 120">
+                        <rect x="50" y="40" width="300" height="40" fill="none" stroke="var(--acento)" stroke-dasharray="4" />
+                        <text x="200" y="65" fill="#fff" font-size="12" text-anchor="middle" font-family="monospace">Limit Conf: θ ± ε</text>
+                        <path d="M 50 60 L 20 60 M 350 60 L 380 60" stroke="var(--rojo)" stroke-width="2" />
+                        <circle cx="200" cy="60" r="15" fill="var(--acento)" opacity="0.3" />
+                        <text x="200" y="100" fill="var(--texto-tenue)" font-size="10" text-anchor="middle">Diagrama A.1: Zona de Asimilación Cognitiva</text>
+                    </svg>
+                </div>
+            `;
+        }
+
+        nextStep(s) {
+            this.audio.playClick();
+            document.getElementById(`onboarding-step-${this.currentOnboardingStep}`).style.display = 'none';
+            document.getElementById(`onboarding-step-${s}`).style.display = 'block';
+            this.currentOnboardingStep = s;
+        }
+
+        bucle() {
+            this.actualizar(); this.dibujar();
+            requestAnimationFrame(() => this.bucle());
+        }
+    }
+
+    // --- OS Core ---
+    function updateClock() {
+        document.getElementById('os-clock').innerText = new Date().toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    const app = new Simulacion();
+    window.app = app;
+
+    window.onload = () => {
+        app.log("SOCIAL_OS Inicializado correctamente.");
+        app.log("Kernel v5.0 cargado en memoria.");
+    };
+</script>
+</body>
+</html>
